@@ -9,7 +9,7 @@
   LAB.emit = (n, d) => { (listeners[n] || []).forEach(f => { try { f(d); } catch (e) { console.error(e); } }); };
   LAB.sleep = ms => new Promise(r => setTimeout(r, ms));
   /* 메시지 언어 (ko = 한국어 설치 CentOS, en = 영어) */
-  LAB.lang = (function () { try { return localStorage.getItem('linuxlab.lang') || 'ko'; } catch (e) { return 'ko'; } })();
+  LAB.lang = 'en';
   LAB.setLang = l => { LAB.lang = l; try { localStorage.setItem('linuxlab.lang', l); } catch (e) { } LAB.emit('lang', l); };
   const TR = [
     [/^ls: cannot access (.+?): /, 'ls: $1에 접근할 수 없습니다: '],
@@ -87,8 +87,8 @@
     const st = {
       ino: 1310000, pid: 2340, hostnameStatic: '', hostname: 'localhost',
       users: {
-        root: { uid: 0, gid: 0, home: '/root', shell: '/bin/bash', hasPassword: true, gecos: 'Super User' },
-        user1: { uid: 1000, gid: 1000, home: HOME0, shell: '/bin/bash', hasPassword: true, gecos: 'user1' },
+        root: { uid: 0, gid: 0, home: '/root', shell: '/bin/bash', hasPassword: true, pw: '1234', gecos: 'Super User' },
+        user1: { uid: 1000, gid: 1000, home: HOME0, shell: '/bin/bash', hasPassword: true, pw: '1234', gecos: 'user1' },
       },
       groups: {
         root: { gid: 0, members: [] }, bin: { gid: 1, members: [] }, daemon: { gid: 2, members: [] }, sys: { gid: 3, members: [] },
@@ -129,8 +129,8 @@
     ['Desktop', 'Documents', 'Downloads', 'Music', 'Pictures', 'Public', 'Templates', 'Videos'].forEach(n => D(HOME0 + '/' + n, 0o755, 1000, 1000));
     F(HOME0 + '/.bashrc', BASHRC, 0o644, 1000, 1000); F(HOME0 + '/.bash_profile', PROFILE, 0o644, 1000, 1000);
     F(HOME0 + '/.bash_logout', '# ~/.bash_logout\n\n', 0o644, 1000, 1000);
-    F(HOME0 + '/test2.sh', '#!/bin/bash\necho "Hello, Linux!"\necho "오늘 날짜: $(date +%F)"\n', 0o664, 1000, 1000);
-    F(HOME0 + '/Documents/linux_note.txt', 'Linux = 커널(kernel)\nShell = 명령어 해석기(bash)\n루트 디렉토리 = /\n홈 디렉토리 = ~\n', 0o664, 1000, 1000);
+    F(HOME0 + '/test2.sh', '#!/bin/bash\necho "Hello, Linux!"\necho "Today: $(date +%F)"\n', 0o664, 1000, 1000);
+    F(HOME0 + '/Documents/linux_note.txt', 'Linux = kernel\nShell = command interpreter (bash)\nroot directory = /\nhome directory = ~\n', 0o664, 1000, 1000);
     F('/var/spool/mail/user1', '', 0o660, 1000, 12);
     BIN.forEach(n => F('/usr/bin/' + n, '\u007fELF', 0o755));
     ['useradd', 'userdel', 'usermod', 'adduser', 'reboot', 'shutdown'].forEach(n => F('/usr/sbin/' + n, '\u007fELF', 0o755));
@@ -840,6 +840,7 @@
   LAB.errMsg = errMsg;
 
   /* ---------------- sudo / su 지원 ---------------- */
+  LAB.checkPw = (name, pw) => { const u = S.users[name]; if (!u || !u.hasPassword || !pw || pw === '\u0004') return false; return u.pw == null ? true : pw === u.pw; };
   LAB.sudoAuth = async function (io) {
     const sh = io.sh; const tab = io.tab; const user = sh.user;
     if (S.users[user].uid === 0) return true;
@@ -860,7 +861,8 @@
     for (let i = 0; i < 3; i++) {
       const pw = await readLineOn(tab, { prompt: `[sudo] password for ${user}: `, hidden: true });
       if (pw === null) return false;
-      if (pw && pw !== '\u0004') { tab.sudoUntil[user] = Date.now() + 15 * 60 * 1000; return true; }
+      if (LAB.checkPw(user, pw)) { tab.sudoUntil[user] = Date.now() + 15 * 60 * 1000; return true; }
+      await LAB.sleep(900);
       if (i < 2) io.err('Sorry, try again.\n');
     }
     io.err('sudo: 3 incorrect password attempts\n'); return false;
@@ -914,7 +916,7 @@
     const t = active; t.closed = false; newShell(t); t.out.innerHTML = ''; els.closed.hidden = true; banner(t); renderTitle(); renderTabs(); renderInput(); LAB.term.focus();
   }
   LAB.reboot = async function () {
-    els.boot.hidden = false; els.boot.querySelector('.boot-msg').textContent = '다시 시작하는 중…';
+    els.boot.hidden = false; els.boot.querySelector('.boot-msg').textContent = 'Rebooting…';
     await LAB.sleep(1400);
     S.hostnameStatic = readHostnameFile() || ''; S.hostname = S.hostnameStatic || 'localhost';
     tabs.splice(0); nextPts = 0; const t = makeTab(); active = null; switchTab(t); banner(t);
@@ -936,8 +938,7 @@
   LAB.flash = flash;
 
   function banner(tab) {
-    if (tab.bannerText) { printTo(tab, tab.bannerText + '\n\n', 'dim'); return; }
-    printTo(tab, 'CentOS Stream 10 실습용 가상 터미널  ·  도움말: help  ·  자동 완성: Tab  ·  이전 명령: ↑  ·  중단: Ctrl+C\n\n', 'dim');
+    /* 실제 GNOME 터미널처럼 안내 문구 없이 프롬프트만 */
   }
 
   /* ---------------- 날짜 포맷 ---------------- */
@@ -999,7 +1000,7 @@
           else if (k === 'g' || k === 'Home') top = 0; else if (k === 'G' || k === 'End') top = max;
           else if (k === '/') searching = '';
           else if (k === 'n') find(1); else if (k === 'N') find(-1);
-          else if (k === 'h') msg = 'q:종료  Space:다음 쪽  b:이전 쪽  /단어:검색  n:다음 결과';
+          else if (k === 'h') msg = 'q:Quit  SPACE:Forward  b:Backward  /pattern:Search  n:Next match';
           h.render(LAB.fsLayer()); return true;
           function find(dir, fromTop) {
             if (!search) return;
@@ -1041,11 +1042,3 @@
     LAB.emit('ready', {});
   };
 })();
-/* 언어 버튼 */
-(function (LAB) {
-  function sync() { ['ko', 'en'].forEach(l => { const b = document.getElementById('lang-' + l); if (b) { b.classList.toggle('on', LAB.lang === l); b.setAttribute('aria-pressed', LAB.lang === l); } }); }
-  LAB.on('ready', () => {
-    sync();
-    document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => { LAB.setLang(b.dataset.lang); sync(); LAB.flash(b.dataset.lang === 'ko' ? '메시지를 한국어(한국어로 설치한 CentOS)로 보여 줘요.' : 'Messages are now shown in English.'); LAB.term.focus(); }));
-  });
-})(window.LAB);

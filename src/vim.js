@@ -415,7 +415,7 @@
         else V.info('"' + V.name + '"');
         return;
       case 'h': case 'help':
-        V.err('E149: Sorry, no help for ' + (arg || 'help.txt') + ' (실습용 vim)');
+        V.err('E149: Sorry, no help for ' + (arg || 'help.txt') + '');
         return;
       default:
         V.err('E492: Not an editor command: ' + raw.trim());
@@ -823,6 +823,6 @@
     });
   }
 
-  LAB.cmd('vim', runVim, { help: '화면 편집기 vim (i 입력, Esc 명령 모드, :wq 저장 후 종료, :q! 저장 없이 종료)' });
-  LAB.cmd('vi', runVim, { help: 'vi 편집기 (이 실습에서는 vim과 같음)' });
+  LAB.cmd('vim', runVim, { help: 'Vi IMproved, a programmer\'s text editor' });
+  LAB.cmd('vi', runVim, { help: 'Vi IMproved, a programmer\'s text editor' });
 })(window.LAB);

@@ -29,10 +29,10 @@
   --term-size: 16px;
 }
 [hidden] { display: none !important; }
-body { background: var(--lab-bg); color: var(--lab-fg); font-family: var(--font-ui); font-size: 14px; display: flex; flex-direction: column; min-height: 100vh; margin: 0; overflow-x: hidden; }
+body { background: var(--lab-bg); color: var(--lab-fg); font-family: var(--font-ui); font-size: 14px; display: flex; flex-direction: column; height: 100vh; height: 100dvh; margin: 0; overflow: hidden; }
 * { box-sizing: border-box; }
 
-.top { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; padding-block: 14px 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); border-bottom: 1px solid var(--lab-line); }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); border-bottom: 1px solid var(--lab-line); }
 .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .brand h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: .2px; }
 .brand p { margin: 2px 0 0; color: var(--lab-muted); font-size: 12.5px; }
@@ -45,11 +45,11 @@ body { background: var(--lab-bg); color: var(--lab-fg); font-family: var(--font-
 .keys { display: flex; flex-wrap: wrap; gap: 6px 14px; list-style: none; margin: 0; padding: 0; color: var(--lab-muted); font-size: 12px; }
 kbd { font-family: var(--font-mono); font-size: 12px; background: var(--lab-raise); border: 1px solid var(--lab-line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; color: var(--lab-fg); }
 
-.lab { flex: 1 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 400px); gap: 16px; padding-block: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); min-height: 0; }
-.missions { background: var(--lab-panel); border: 1px solid var(--lab-line); border-radius: 12px; overflow: hidden; height: min(calc(100vh - 120px), 900px); min-height: 420px; position: sticky; top: env(safe-area-inset-top, 0px); }
+.lab { flex: 1 1 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 400px); grid-template-rows: minmax(0, 1fr); gap: 14px; padding-block: 14px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); min-height: 0; }
+.missions { background: var(--lab-panel); border: 1px solid var(--lab-line); border-radius: 12px; overflow: hidden; height: 100%; min-height: 0; }
 
 /* ---- GNOME Terminal 창 ---- */
-.termwin { display: flex; flex-direction: column; min-width: 0; height: min(calc(100vh - 120px), 900px); min-height: 420px; border-radius: 12px; overflow: hidden; background: var(--term-bg); border: 1px solid #000; box-shadow: 0 0 0 1px rgba(255,255,255,.06); position: relative; }
+.termwin { display: flex; flex-direction: column; min-width: 0; height: 100%; min-height: 0; border-radius: 12px; overflow: hidden; background: var(--term-bg); border: 1px solid #000; box-shadow: 0 0 0 1px rgba(255,255,255,.06); position: relative; }
 .termwin.focus { box-shadow: 0 0 0 1px rgba(255,255,255,.12); }
 .tw-head { flex: none; height: 46px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; background: var(--head); color: var(--head-fg); padding: 0 8px; border-bottom: 1px solid #1d1d1d; }
 .tw-left { display: flex; gap: 6px; }
@@ -104,6 +104,8 @@ kbd { font-family: var(--font-mono); font-size: 12px; background: var(--lab-rais
 .foot p { margin: 0; max-width: 90ch; line-height: 1.6; }
 
 @media (max-width: 900px) {
+  body { height: auto; min-height: 100vh; overflow: visible; }
+  .lab { grid-template-rows: auto; }
   .lab { grid-template-columns: minmax(0, 1fr); }
   .missions { position: static; height: auto; min-height: 0; overflow: visible; }
   .termwin { height: 62vh; min-height: 360px; }
@@ -122,13 +124,8 @@ kbd { font-family: var(--font-mono); font-size: 12px; background: var(--lab-rais
     <span class="logo" aria-hidden="true"><svg viewBox="0 0 32 32" width="22" height="22"><path d="M6 9l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 24h10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></span>
     <div>
       <h1>리눅스 터미널 실습실</h1>
-      <p>CentOS Stream 10 가상 터미널 · 리눅스 3장 기본 명령어 실습</p>
+      <p>CentOS Stream 10 가상 터미널 · 과제를 고르면 새 터미널로 시작 · 새로 고침 = 재부팅</p>
     </div>
-  </div>
-  <div class="lang" role="group" aria-label="메시지 언어">
-    <span class="lang-l">메시지</span>
-    <button type="button" data-lang="ko" id="lang-ko">한국어</button>
-    <button type="button" data-lang="en" id="lang-en">English</button>
   </div>
   <ul class="keys" aria-label="키보드 도움말">
     <li><kbd>Tab</kbd> 자동 완성</li>
@@ -176,67 +173,63 @@ kbd { font-family: var(--font-mono); font-size: 12px; background: var(--lab-rais
   <aside id="missions" class="missions" aria-label="실습 과제"></aside>
 </main>
 
-<footer class="foot">
-  <p>수업 VM(CentOS Stream 10)과 같은 화면을 흉내 낸 실습용 가상 환경이에요. 과제를 고르면 파일·계정이 처음 상태인 새 터미널이 열려요. 실제 컴퓨터에는 아무 영향이 없고, 진행 상황은 이 브라우저에만 저장돼요. 새로 고침은 <b>재부팅</b>과 같아서 일시적으로 바꾼 hostname은 원래대로 돌아가요.</p>
-</footer>
-
 <script>/* man 페이지 (실제 매뉴얼을 줄인 것 + 한 줄 한국어 요약) */
 window.LAB_MAN = (function () {
   const P = (name, sum, syn, desc, opts) => `NAME\n       ${name} - ${sum}\n\nSYNOPSIS\n       ${syn}\n\nDESCRIPTION\n       ${desc.split('\n').join('\n       ')}\n` +
     (opts && opts.length ? `\nOPTIONS\n${opts.map(([o, d]) => `       ${o}\n              ${d}`).join('\n\n')}\n` : '');
   return {
-    ls: P('ls', 'list directory contents', 'ls [OPTION]... [FILE]...', 'List information about the FILEs (the current directory by default).\n[요약] 디렉토리 안의 파일 목록을 보여 준다.', [
+    ls: P('ls', 'list directory contents', 'ls [OPTION]... [FILE]...', 'List information about the FILEs (the current directory by default).', [
       ['-a, --all', 'do not ignore entries starting with .  (숨김 파일 포함)'], ['-A, --almost-all', 'do not list implied . and ..'],
       ['-d, --directory', 'list directories themselves, not their contents  (디렉토리 자체 정보)'], ['-F, --classify', 'append indicator (one of */=>@|) to entries  (종류 표시)'],
       ['-h, --human-readable', 'with -l, print sizes like 1K 234M 2G etc.'], ['-i, --inode', 'print the index number of each file'],
       ['-l', 'use a long listing format  (자세히)'], ['-r, --reverse', 'reverse order while sorting'], ['-R, --recursive', 'list subdirectories recursively  (하위까지)'],
       ['-t', 'sort by time, newest first'], ['-u', 'with -lt: sort by, and show, access time; with -l: show access time and sort by name; otherwise: sort by access time, newest first'], ['-1', 'list one file per line']]),
-    cat: P('cat', 'concatenate files and print on the standard output', 'cat [OPTION]... [FILE]...', 'Concatenate FILE(s) to standard output.\nWith no FILE, or when FILE is -, read standard input.\n[요약] 파일 내용을 화면에 출력한다. cat > 파일 은 키보드 입력을 파일로 저장(Ctrl+D로 끝).', [
+    cat: P('cat', 'concatenate files and print on the standard output', 'cat [OPTION]... [FILE]...', 'Concatenate FILE(s) to standard output.\nWith no FILE, or when FILE is -, read standard input.', [
       ['-A, --show-all', 'equivalent to -vET'], ['-b, --number-nonblank', 'number nonempty output lines, overrides -n'], ['-E, --show-ends', 'display $ at end of each line'],
       ['-n, --number', 'number all output lines'], ['-s, --squeeze-blank', 'suppress repeated empty output lines'], ['-T, --show-tabs', 'display TAB characters as ^I'], ['-v, --show-nonprinting', 'use ^ and M- notation, except for LFD and TAB']]),
-    pwd: P('pwd', 'print name of current/working directory', 'pwd [OPTION]...', 'Print the full filename of the current working directory.\n[요약] 현재 작업 디렉토리의 절대 경로를 출력한다.'),
-    mkdir: P('mkdir', 'make directories', 'mkdir [OPTION]... DIRECTORY...', 'Create the DIRECTORY(ies), if they do not already exist.\n[요약] 디렉토리를 만든다.', [['-m, --mode=MODE', 'set file mode (as in chmod), not a=rwx - umask'], ['-p, --parents', 'no error if existing, make parent directories as needed  (중간 디렉토리까지)'], ['-v, --verbose', 'print a message for each created directory']]),
-    rmdir: P('rmdir', 'remove empty directories', 'rmdir [OPTION]... DIRECTORY...', 'Remove the DIRECTORY(ies), if they are empty.\n[요약] 빈 디렉토리만 지운다.', [['-p, --parents', 'remove DIRECTORY and its ancestors']]),
-    cp: P('cp', 'copy files and directories', 'cp [OPTION]... SOURCE DEST\n       cp [OPTION]... SOURCE... DIRECTORY', 'Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.\n[요약] 파일/디렉토리를 복사한다.', [['-i, --interactive', 'prompt before overwrite'], ['-p', 'same as --preserve=mode,ownership,timestamps'], ['-R, -r, --recursive', 'copy directories recursively'], ['-v, --verbose', 'explain what is being done']]),
-    mv: P('mv', 'move (rename) files', 'mv [OPTION]... SOURCE DEST\n       mv [OPTION]... SOURCE... DIRECTORY', 'Rename SOURCE to DEST, or move SOURCE(s) to DIRECTORY.\n[요약] 파일을 옮기거나 이름을 바꾼다.', [['-i, --interactive', 'prompt before overwrite'], ['-v, --verbose', 'explain what is being done']]),
-    rm: P('rm', 'remove files or directories', 'rm [OPTION]... [FILE]...', 'rm removes each specified file. By default, it does not remove directories.\n[요약] 파일을 지운다. 디렉토리는 -r 필요.', [['-f, --force', 'ignore nonexistent files and arguments, never prompt'], ['-i', 'prompt before every removal'], ['-r, -R, --recursive', 'remove directories and their contents recursively'], ['-d, --dir', 'remove empty directories'], ['-v, --verbose', 'explain what is being done']]),
-    touch: P('touch', 'change file timestamps', 'touch [OPTION]... FILE...', 'Update the access and modification times of each FILE to the current time.\nA FILE argument that does not exist is created empty.\n[요약] 빈 파일을 만들거나 시간을 현재로 바꾼다.', [['-a', 'change only the access time'], ['-c, --no-create', 'do not create any files'], ['-m', 'change only the modification time']]),
-    head: P('head', 'output the first part of files', 'head [OPTION]... [FILE]...', 'Print the first 10 lines of each FILE to standard output.\n[요약] 앞부분(기본 10줄)을 출력한다.', [['-c, --bytes=[-]NUM', 'print the first NUM bytes of each file'], ['-n, --lines=[-]NUM', 'print the first NUM lines instead of the first 10'], ['-q, --quiet', 'never print headers giving file names'], ['-v, --verbose', 'always print headers giving file names']]),
-    tail: P('tail', 'output the last part of files', 'tail [OPTION]... [FILE]...', 'Print the last 10 lines of each FILE to standard output.\n[요약] 뒷부분(기본 10줄)을 출력한다.', [['-c, --bytes=[+]NUM', 'output the last NUM bytes'], ['-f, --follow', 'output appended data as the file grows  (Ctrl+C로 끝)'], ['-n, --lines=[+]NUM', 'output the last NUM lines; or use -n +NUM to skip NUM-1 lines at the start'], ['-q, --quiet', 'never output headers giving file names'], ['-v, --verbose', 'always output headers giving file names']]),
-    more: P('more', 'display the contents of a file in a terminal', 'more [options] file...', 'more is a filter for paging through text one screenful at a time.\n[요약] 한 화면씩 본다. Space 다음 쪽, Enter 한 줄, q 종료.'),
-    less: P('less', 'opposite of more', 'less [options] file...', 'Less is a program similar to more, but it allows backward movement in the file as well as forward movement.\n[요약] 앞뒤로 움직이며 본다. Space/b 쪽 이동, /단어 검색, n 다음, q 종료.'),
-    wc: P('wc', 'print newline, word, and byte counts for each file', 'wc [OPTION]... [FILE]...', 'Print newline, word, and byte counts for each FILE.\n[요약] 줄·단어·바이트 수를 센다.', [['-c, --bytes', 'print the byte counts'], ['-l, --lines', 'print the newline counts'], ['-w, --words', 'print the word counts']]),
-    grep: P('grep', 'print lines that match patterns', 'grep [OPTION...] PATTERNS [FILE...]', 'grep searches for PATTERNS in each FILE.\n[요약] 패턴이 있는 줄을 찾는다.', [['-i, --ignore-case', 'ignore case distinctions'], ['-n, --line-number', 'prefix each line with its line number'], ['-v, --invert-match', 'select non-matching lines'], ['-c, --count', 'print a count of matching lines'], ['-r, --recursive', 'read all files under each directory']]),
-    seq: P('seq', 'print a sequence of numbers', 'seq [OPTION]... LAST\n       seq [OPTION]... FIRST LAST\n       seq [OPTION]... FIRST INCREMENT LAST', 'Print numbers from FIRST to LAST, in steps of INCREMENT.\n[요약] 숫자를 차례로 출력한다.', [['-f, --format=FORMAT', 'use printf style floating-point FORMAT'], ['-s, --separator=STRING', 'use STRING to separate numbers (default: \\n)'], ['-w, --equal-width', 'equalize width by padding with leading zeroes']]),
-    date: P('date', 'print or set the system date and time', 'date [OPTION]... [+FORMAT]', 'Display date and time in the given FORMAT.\n[요약] 날짜·시간을 출력한다. date +%Y-%m-%d, date -d yesterday', [['-d, --date=STRING', "display time described by STRING, not 'now'"], ['-s, --set=STRING', 'set time described by STRING  (root만)'], ['-u, --utc', 'print Coordinated Universal Time (UTC)'], ['%Y %m %d %H %M %S', 'year, month, day, hour, minute, second'], ['%A %a %B %b', 'weekday / month names'], ['%F %T', 'full date (%Y-%m-%d) / time (%H:%M:%S)']]),
-    uname: P('uname', 'print system information', 'uname [OPTION]...', 'Print certain system information. With no OPTION, same as -s.\n[요약] 운영체제와 커널 정보를 출력한다.', [['-a, --all', 'print all information'], ['-s, --kernel-name', 'print the kernel name'], ['-n, --nodename', 'print the network node hostname'], ['-r, --kernel-release', 'print the kernel release'], ['-v, --kernel-version', 'print the kernel version'], ['-m, --machine', 'print the machine hardware name'], ['-p, --processor', 'print the processor type'], ['-i, --hardware-platform', 'print the hardware platform'], ['-o, --operating-system', 'print the operating system']]),
-    hostname: P('hostname', 'show or set the system\'s host name', 'hostname [-a|-d|-f|-i|-I|-s] [name]', 'Hostname is used to display the system\'s DNS name, and to display or set its hostname.\n[요약] 호스트 이름을 보여 주거나 바꾼다. sudo hostname 이름 은 재부팅하면 사라지는 일시적 변경. CentOS 설치 직후 기본값은 localhost.', [['-i, --ip-address', 'Display the network address(es) of the host name.'], ['-I, --all-ip-addresses', 'Display all network addresses of the host.']]),
-    hostnamectl: P('hostnamectl', 'Control the system hostname', 'hostnamectl [OPTIONS...] {COMMAND}', 'hostnamectl may be used to query and change the system hostname and related settings.\n[요약] 시스템 정보를 보거나 hostname을 영구적으로 바꾼다 (/etc/hostname에 기록).', [['status', 'Show system hostname and related information.'], ['hostname [NAME]', 'If no argument is given, print the system hostname. If an optional argument NAME is provided then the command changes the system hostname to NAME.'], ['set-hostname NAME', 'Set the system hostname (static and transient).']]),
-    whoami: P('whoami', 'print effective user name', 'whoami [OPTION]...', 'Print the user name associated with the current effective user ID.\n[요약] 지금 명령을 실행하는 사용자 이름. sudo whoami 는 root.'),
-    who: P('who', 'show who is logged on', 'who [OPTION]... [ FILE | ARG1 ARG2 ]', 'Print information about users who are currently logged in.\n[요약] 로그인한 사용자 목록.', [['-a, --all', 'same as -b -d --login -p -r -t -T -u'], ['-b, --boot', 'time of last system boot']]),
-    tty: P('tty', 'print the file name of the terminal connected to standard input', 'tty [OPTION]...', 'Print the file name of the terminal connected to standard input.\n[요약] 지금 쓰는 터미널 장치. /dev/pts/N 은 가상(의사) 터미널.'),
-    id: P('id', 'print real and effective user and group IDs', 'id [OPTION]... [USER]...', 'Print user and group information for each specified USER, or (when USER omitted) for the current process.\n[요약] UID, GID, 그룹을 보여 준다. 계정이 있는지 확인할 때도 쓴다.', [['-u, --user', 'print only the effective user ID'], ['-g, --group', 'print only the effective group ID'], ['-G, --groups', 'print all group IDs'], ['-n, --name', 'print a name instead of a number, for -ugG']]),
-    stat: P('stat', 'display file or file system status', 'stat [OPTION]... FILE...', 'Display file or file system status.\n[요약] 파일 정보. Access=마지막 읽은 시간, Modify=내용 바뀐 시간, Change=정보(권한·이름 등)가 바뀐 시간, Birth=만든 시간.', [['-L, --dereference', 'follow links']]),
-    chmod: P('chmod', 'change file mode bits', 'chmod [OPTION]... MODE[,MODE]... FILE...\n       chmod [OPTION]... OCTAL-MODE FILE...', 'chmod changes the file mode bits of each given file according to mode, which can be either a symbolic representation of changes to make, or an octal number representing the bit pattern for the new mode bits.\n[요약] 권한을 바꾼다. 755 = rwxr-xr-x, u+x = 소유자에게 실행 권한 추가.', [['-R, --recursive', 'change files and directories recursively']]),
-    chown: P('chown', 'change file owner and group', 'chown [OPTION]... [OWNER][:[GROUP]] FILE...', 'chown changes the user and/or group ownership of each given file.\n[요약] 소유자를 바꾼다(root만).', [['-R, --recursive', 'operate on files and directories recursively']]),
-    passwd: P('passwd', 'change user password', 'passwd [options] [LOGIN]', 'The passwd command changes passwords for user accounts. A normal user may only change the password for their own account, while the superuser may change the password for any account.\n[요약] 비밀번호를 바꾼다. 다른 사람 것은 sudo passwd 사용자.'),
-    su: P('su', 'run a command with substitute user and group ID', 'su [options] [-] [user [argument...]]', 'su allows commands to be run with a substitute user and group ID. When called with no user specified, su defaults to running an interactive shell as root.\n[요약] 다른 사용자로 바꾼다. 새 bash(자식 셸)가 하나 더 생기고, exit 하면 원래 사용자로 돌아온다.', [['-, -l, --login', 'Start the shell as a login shell with an environment similar to a real login.']]),
-    sudo: P('sudo', 'execute a command as another user', 'sudo [-ABbEHnPS] [-u user] command [arg ...]\n       sudo -i | -s', 'sudo allows a permitted user to execute a command as the superuser or another user, as specified by the security policy (/etc/sudoers).\n[요약] 관리자(root) 권한으로 명령을 실행한다. 비밀번호는 자기 비밀번호. CentOS 에서는 wheel 그룹 사용자가 sudo 를 쓸 수 있다.', [['-i, --login', 'Run the shell specified by the target user\'s password database entry as a login shell.'], ['-k, --reset-timestamp', 'Invalidate the user\'s cached credentials.'], ['-s, --shell', 'Run the shell specified by the SHELL environment variable.']]),
-    useradd: P('useradd', 'create a new user or update default new user information', 'useradd [options] LOGIN', 'useradd is a low level utility for adding users.\n[요약] 사용자 계정을 만든다. CentOS 는 /etc/login.defs 의 CREATE_HOME yes 때문에 -m 이 없어도 홈 디렉토리(/home/이름, 권한 700)가 만들어진다. 홈을 만들지 않으려면 -M.', [['-m, --create-home', 'Create the user\'s home directory if it does not exist.'], ['-M, --no-create-home', 'Do not create the user\'s home directory, even if the system wide setting from /etc/login.defs (CREATE_HOME) is set to yes.'], ['-d, --home-dir HOME_DIR', 'The new user will be created using HOME_DIR as the value for the user\'s login directory.'], ['-s, --shell SHELL', 'The name of the user\'s login shell.'], ['-c, --comment COMMENT', 'Any text string (usually the user\'s full name).']]),
-    userdel: P('userdel', 'delete a user account and related files', 'userdel [options] LOGIN', 'The userdel command modifies the system account files, deleting all entries that refer to the user name LOGIN.\n[요약] 계정을 지운다. -r 은 홈 디렉토리와 메일 스풀까지, -f 는 로그인 중이어도 강제로.', [['-f, --force', 'This option forces the removal of the user account, even if the user is still logged in.'], ['-r, --remove', 'Files in the user\'s home directory will be removed along with the home directory itself and the user\'s mail spool.']]),
-    ps: P('ps', 'report a snapshot of the current processes', 'ps [options]', 'ps displays information about a selection of the active processes.\n[요약] 실행 중인 프로세스 목록. PID=프로세스 번호, PPID=부모 프로세스 번호.', [['-e, -A', 'Select all processes.'], ['-f', 'Do full-format listing (UID PID PPID C STIME TTY TIME CMD).'], ['-p pidlist', 'Select by process ID.'], ['-u userlist', 'Select by effective user ID or name.']]),
-    pstree: P('pstree', 'display a tree of processes', 'pstree [-p] [pid | user]', 'pstree shows running processes as a tree.\n[요약] 프로세스를 부모→자식 나무 모양으로 보여 준다. su 할 때마다 bash가 자식으로 생기는 것을 볼 수 있다.', [['-p', 'Show PIDs. PIDs are shown as decimal numbers in parentheses after each process name.']]),
-    kill: P('kill', 'send a signal to a process', 'kill [-signal|-s signal] pid...\n       kill -l', 'The default signal for kill is TERM.\n[요약] 프로세스에 신호를 보낸다. 대화형 bash는 TERM을 무시하므로 kill PID 로는 안 꺼지고, kill -9 는 강제 종료(자식까지 함께 사라짐). 셸은 exit로 차례대로 닫는 것이 안전하다.', [['-l', 'List signal names.'], ['-9, -KILL', 'Kill the process immediately (cannot be caught or ignored).'], ['-15, -TERM', 'Terminate (default).']]),
-    ping: P('ping', 'send ICMP ECHO_REQUEST to network hosts', 'ping [-c count] [-i interval] destination', 'ping uses the ICMP protocol\'s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.\n[요약] 상대가 응답하는지 확인한다. Ctrl+C 로 멈춘다. 127.0.0.1(localhost)은 자기 자신(루프백).', [['-c count', 'Stop after sending count ECHO_REQUEST packets.']]),
-    mkfifo: P('mkfifo', 'make FIFOs (named pipes)', 'mkfifo [OPTION]... NAME...', 'Create named pipes (FIFOs) with the given NAMEs.\n[요약] 이름 있는 파이프를 만든다. 한쪽 터미널에서 echo hi > 파이프, 다른 탭에서 cat 파이프.', [['-m, --mode=MODE', 'set file permission bits to MODE, not a=rw - umask']]),
-    echo: P('echo', 'display a line of text', 'echo [SHORT-OPTION]... [STRING]...', 'Echo the STRING(s) to standard output.\n[요약] 글자를 출력한다. echo $$ 는 현재 셸의 PID.', [['-n', 'do not output the trailing newline'], ['-e', 'enable interpretation of backslash escapes']]),
-    vim: P('vim', 'Vi IMproved, a programmer\'s text editor', 'vim [options] [file ..]', 'Vim is a text editor that is upwards compatible to Vi.\n[요약] i 입력 모드, Esc 명령 모드, :w 저장, :q 종료, :wq 저장 후 종료, :q! 저장 없이 종료, yy 복사, p 붙이기, dd 줄 삭제, /단어 검색.'),
-    man: P('man', 'an interface to the system reference manuals', 'man [section] page', 'man is the system\'s manual pager.\n[요약] 명령 설명서. Space 다음 쪽, /단어 검색, q 나가기.'),
-    file: P('file', 'determine file type', 'file [-bcdEhiklLNnprsSvzZ0] file ...', 'file tests each argument in an attempt to classify it.\n[요약] 파일 종류를 알려 준다.'),
-    ln: P('ln', 'make links between files', 'ln [OPTION]... [-T] TARGET LINK_NAME', 'Create hard links by default, symbolic links with --symbolic.\n[요약] 링크를 만든다. -s 는 바로 가기 같은 심볼릭 링크.', [['-s, --symbolic', 'make symbolic links instead of hard links']]),
-    find: P('find', 'search for files in a directory hierarchy', 'find [starting-point...] [expression]', 'find searches the directory tree rooted at each given starting-point.\n[요약] 파일을 찾는다. find ~ -name "*.txt"', [['-name pattern', 'Base of file name matches shell pattern.'], ['-type c', 'File is of type c: d directory, f regular file.'], ['-maxdepth levels', 'Descend at most levels of directories.']]),
-    dnf: P('dnf', 'DNF Package Management Utility', 'dnf [options] <command> [<args>...]', 'DNF is the next upcoming major version of YUM, a package manager for RPM-based Linux distributions.\n[요약] 프로그램(패키지)을 설치한다. sudo dnf install tree  (우분투의 apt 에 해당)'),
-    hosts: P('hosts', 'static table lookup for hostnames', '/etc/hosts', 'This manual page describes the format of the /etc/hosts file. This file is a simple text file that associates IP addresses with hostnames, one line per IP address.\n[요약] IP 주소 ↔ 이름 표. DNS보다 먼저 참조한다. 127.0.0.1 localhost = 자기 자신.'),
+    pwd: P('pwd', 'print name of current/working directory', 'pwd [OPTION]...', 'Print the full filename of the current working directory.'),
+    mkdir: P('mkdir', 'make directories', 'mkdir [OPTION]... DIRECTORY...', 'Create the DIRECTORY(ies), if they do not already exist.', [['-m, --mode=MODE', 'set file mode (as in chmod), not a=rwx - umask'], ['-p, --parents', 'no error if existing, make parent directories as needed  (중간 디렉토리까지)'], ['-v, --verbose', 'print a message for each created directory']]),
+    rmdir: P('rmdir', 'remove empty directories', 'rmdir [OPTION]... DIRECTORY...', 'Remove the DIRECTORY(ies), if they are empty.', [['-p, --parents', 'remove DIRECTORY and its ancestors']]),
+    cp: P('cp', 'copy files and directories', 'cp [OPTION]... SOURCE DEST\n       cp [OPTION]... SOURCE... DIRECTORY', 'Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.', [['-i, --interactive', 'prompt before overwrite'], ['-p', 'same as --preserve=mode,ownership,timestamps'], ['-R, -r, --recursive', 'copy directories recursively'], ['-v, --verbose', 'explain what is being done']]),
+    mv: P('mv', 'move (rename) files', 'mv [OPTION]... SOURCE DEST\n       mv [OPTION]... SOURCE... DIRECTORY', 'Rename SOURCE to DEST, or move SOURCE(s) to DIRECTORY.', [['-i, --interactive', 'prompt before overwrite'], ['-v, --verbose', 'explain what is being done']]),
+    rm: P('rm', 'remove files or directories', 'rm [OPTION]... [FILE]...', 'rm removes each specified file. By default, it does not remove directories.', [['-f, --force', 'ignore nonexistent files and arguments, never prompt'], ['-i', 'prompt before every removal'], ['-r, -R, --recursive', 'remove directories and their contents recursively'], ['-d, --dir', 'remove empty directories'], ['-v, --verbose', 'explain what is being done']]),
+    touch: P('touch', 'change file timestamps', 'touch [OPTION]... FILE...', 'Update the access and modification times of each FILE to the current time.\nA FILE argument that does not exist is created empty.', [['-a', 'change only the access time'], ['-c, --no-create', 'do not create any files'], ['-m', 'change only the modification time']]),
+    head: P('head', 'output the first part of files', 'head [OPTION]... [FILE]...', 'Print the first 10 lines of each FILE to standard output.', [['-c, --bytes=[-]NUM', 'print the first NUM bytes of each file'], ['-n, --lines=[-]NUM', 'print the first NUM lines instead of the first 10'], ['-q, --quiet', 'never print headers giving file names'], ['-v, --verbose', 'always print headers giving file names']]),
+    tail: P('tail', 'output the last part of files', 'tail [OPTION]... [FILE]...', 'Print the last 10 lines of each FILE to standard output.', [['-c, --bytes=[+]NUM', 'output the last NUM bytes'], ['-f, --follow', 'output appended data as the file grows  (Ctrl+C로 끝)'], ['-n, --lines=[+]NUM', 'output the last NUM lines; or use -n +NUM to skip NUM-1 lines at the start'], ['-q, --quiet', 'never output headers giving file names'], ['-v, --verbose', 'always output headers giving file names']]),
+    more: P('more', 'display the contents of a file in a terminal', 'more [options] file...', 'more is a filter for paging through text one screenful at a time.'),
+    less: P('less', 'opposite of more', 'less [options] file...', 'Less is a program similar to more, but it allows backward movement in the file as well as forward movement.'),
+    wc: P('wc', 'print newline, word, and byte counts for each file', 'wc [OPTION]... [FILE]...', 'Print newline, word, and byte counts for each FILE.', [['-c, --bytes', 'print the byte counts'], ['-l, --lines', 'print the newline counts'], ['-w, --words', 'print the word counts']]),
+    grep: P('grep', 'print lines that match patterns', 'grep [OPTION...] PATTERNS [FILE...]', 'grep searches for PATTERNS in each FILE.', [['-i, --ignore-case', 'ignore case distinctions'], ['-n, --line-number', 'prefix each line with its line number'], ['-v, --invert-match', 'select non-matching lines'], ['-c, --count', 'print a count of matching lines'], ['-r, --recursive', 'read all files under each directory']]),
+    seq: P('seq', 'print a sequence of numbers', 'seq [OPTION]... LAST\n       seq [OPTION]... FIRST LAST\n       seq [OPTION]... FIRST INCREMENT LAST', 'Print numbers from FIRST to LAST, in steps of INCREMENT.', [['-f, --format=FORMAT', 'use printf style floating-point FORMAT'], ['-s, --separator=STRING', 'use STRING to separate numbers (default: \\n)'], ['-w, --equal-width', 'equalize width by padding with leading zeroes']]),
+    date: P('date', 'print or set the system date and time', 'date [OPTION]... [+FORMAT]', 'Display date and time in the given FORMAT.', [['-d, --date=STRING', "display time described by STRING, not 'now'"], ['-s, --set=STRING', 'set time described by STRING  (root만)'], ['-u, --utc', 'print Coordinated Universal Time (UTC)'], ['%Y %m %d %H %M %S', 'year, month, day, hour, minute, second'], ['%A %a %B %b', 'weekday / month names'], ['%F %T', 'full date (%Y-%m-%d) / time (%H:%M:%S)']]),
+    uname: P('uname', 'print system information', 'uname [OPTION]...', 'Print certain system information. With no OPTION, same as -s.', [['-a, --all', 'print all information'], ['-s, --kernel-name', 'print the kernel name'], ['-n, --nodename', 'print the network node hostname'], ['-r, --kernel-release', 'print the kernel release'], ['-v, --kernel-version', 'print the kernel version'], ['-m, --machine', 'print the machine hardware name'], ['-p, --processor', 'print the processor type'], ['-i, --hardware-platform', 'print the hardware platform'], ['-o, --operating-system', 'print the operating system']]),
+    hostname: P('hostname', 'show or set the system\'s host name', 'hostname [-a|-d|-f|-i|-I|-s] [name]', 'Hostname is used to display the system\'s DNS name, and to display or set its hostname.', [['-i, --ip-address', 'Display the network address(es) of the host name.'], ['-I, --all-ip-addresses', 'Display all network addresses of the host.']]),
+    hostnamectl: P('hostnamectl', 'Control the system hostname', 'hostnamectl [OPTIONS...] {COMMAND}', 'hostnamectl may be used to query and change the system hostname and related settings.', [['status', 'Show system hostname and related information.'], ['hostname [NAME]', 'If no argument is given, print the system hostname. If an optional argument NAME is provided then the command changes the system hostname to NAME.'], ['set-hostname NAME', 'Set the system hostname (static and transient).']]),
+    whoami: P('whoami', 'print effective user name', 'whoami [OPTION]...', 'Print the user name associated with the current effective user ID.'),
+    who: P('who', 'show who is logged on', 'who [OPTION]... [ FILE | ARG1 ARG2 ]', 'Print information about users who are currently logged in.', [['-a, --all', 'same as -b -d --login -p -r -t -T -u'], ['-b, --boot', 'time of last system boot']]),
+    tty: P('tty', 'print the file name of the terminal connected to standard input', 'tty [OPTION]...', 'Print the file name of the terminal connected to standard input.'),
+    id: P('id', 'print real and effective user and group IDs', 'id [OPTION]... [USER]...', 'Print user and group information for each specified USER, or (when USER omitted) for the current process.', [['-u, --user', 'print only the effective user ID'], ['-g, --group', 'print only the effective group ID'], ['-G, --groups', 'print all group IDs'], ['-n, --name', 'print a name instead of a number, for -ugG']]),
+    stat: P('stat', 'display file or file system status', 'stat [OPTION]... FILE...', 'Display file or file system status.', [['-L, --dereference', 'follow links']]),
+    chmod: P('chmod', 'change file mode bits', 'chmod [OPTION]... MODE[,MODE]... FILE...\n       chmod [OPTION]... OCTAL-MODE FILE...', 'chmod changes the file mode bits of each given file according to mode, which can be either a symbolic representation of changes to make, or an octal number representing the bit pattern for the new mode bits.', [['-R, --recursive', 'change files and directories recursively']]),
+    chown: P('chown', 'change file owner and group', 'chown [OPTION]... [OWNER][:[GROUP]] FILE...', 'chown changes the user and/or group ownership of each given file.', [['-R, --recursive', 'operate on files and directories recursively']]),
+    passwd: P('passwd', 'change user password', 'passwd [options] [LOGIN]', 'The passwd command changes passwords for user accounts. A normal user may only change the password for their own account, while the superuser may change the password for any account.'),
+    su: P('su', 'run a command with substitute user and group ID', 'su [options] [-] [user [argument...]]', 'su allows commands to be run with a substitute user and group ID. When called with no user specified, su defaults to running an interactive shell as root.', [['-, -l, --login', 'Start the shell as a login shell with an environment similar to a real login.']]),
+    sudo: P('sudo', 'execute a command as another user', 'sudo [-ABbEHnPS] [-u user] command [arg ...]\n       sudo -i | -s', 'sudo allows a permitted user to execute a command as the superuser or another user, as specified by the security policy (/etc/sudoers).', [['-i, --login', 'Run the shell specified by the target user\'s password database entry as a login shell.'], ['-k, --reset-timestamp', 'Invalidate the user\'s cached credentials.'], ['-s, --shell', 'Run the shell specified by the SHELL environment variable.']]),
+    useradd: P('useradd', 'create a new user or update default new user information', 'useradd [options] LOGIN', 'useradd is a low level utility for adding users.', [['-m, --create-home', 'Create the user\'s home directory if it does not exist.'], ['-M, --no-create-home', 'Do not create the user\'s home directory, even if the system wide setting from /etc/login.defs (CREATE_HOME) is set to yes.'], ['-d, --home-dir HOME_DIR', 'The new user will be created using HOME_DIR as the value for the user\'s login directory.'], ['-s, --shell SHELL', 'The name of the user\'s login shell.'], ['-c, --comment COMMENT', 'Any text string (usually the user\'s full name).']]),
+    userdel: P('userdel', 'delete a user account and related files', 'userdel [options] LOGIN', 'The userdel command modifies the system account files, deleting all entries that refer to the user name LOGIN.', [['-f, --force', 'This option forces the removal of the user account, even if the user is still logged in.'], ['-r, --remove', 'Files in the user\'s home directory will be removed along with the home directory itself and the user\'s mail spool.']]),
+    ps: P('ps', 'report a snapshot of the current processes', 'ps [options]', 'ps displays information about a selection of the active processes.', [['-e, -A', 'Select all processes.'], ['-f', 'Do full-format listing (UID PID PPID C STIME TTY TIME CMD).'], ['-p pidlist', 'Select by process ID.'], ['-u userlist', 'Select by effective user ID or name.']]),
+    pstree: P('pstree', 'display a tree of processes', 'pstree [-p] [pid | user]', 'pstree shows running processes as a tree.', [['-p', 'Show PIDs. PIDs are shown as decimal numbers in parentheses after each process name.']]),
+    kill: P('kill', 'send a signal to a process', 'kill [-signal|-s signal] pid...\n       kill -l', 'The default signal for kill is TERM.', [['-l', 'List signal names.'], ['-9, -KILL', 'Kill the process immediately (cannot be caught or ignored).'], ['-15, -TERM', 'Terminate (default).']]),
+    ping: P('ping', 'send ICMP ECHO_REQUEST to network hosts', 'ping [-c count] [-i interval] destination', 'ping uses the ICMP protocol\'s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.', [['-c count', 'Stop after sending count ECHO_REQUEST packets.']]),
+    mkfifo: P('mkfifo', 'make FIFOs (named pipes)', 'mkfifo [OPTION]... NAME...', 'Create named pipes (FIFOs) with the given NAMEs.', [['-m, --mode=MODE', 'set file permission bits to MODE, not a=rw - umask']]),
+    echo: P('echo', 'display a line of text', 'echo [SHORT-OPTION]... [STRING]...', 'Echo the STRING(s) to standard output.', [['-n', 'do not output the trailing newline'], ['-e', 'enable interpretation of backslash escapes']]),
+    vim: P('vim', 'Vi IMproved, a programmer\'s text editor', 'vim [options] [file ..]', 'Vim is a text editor that is upwards compatible to Vi.'),
+    man: P('man', 'an interface to the system reference manuals', 'man [section] page', 'man is the system\'s manual pager.'),
+    file: P('file', 'determine file type', 'file [-bcdEhiklLNnprsSvzZ0] file ...', 'file tests each argument in an attempt to classify it.'),
+    ln: P('ln', 'make links between files', 'ln [OPTION]... [-T] TARGET LINK_NAME', 'Create hard links by default, symbolic links with --symbolic.', [['-s, --symbolic', 'make symbolic links instead of hard links']]),
+    find: P('find', 'search for files in a directory hierarchy', 'find [starting-point...] [expression]', 'find searches the directory tree rooted at each given starting-point.', [['-name pattern', 'Base of file name matches shell pattern.'], ['-type c', 'File is of type c: d directory, f regular file.'], ['-maxdepth levels', 'Descend at most levels of directories.']]),
+    dnf: P('dnf', 'DNF Package Management Utility', 'dnf [options] <command> [<args>...]', 'DNF is the next upcoming major version of YUM, a package manager for RPM-based Linux distributions.'),
+    hosts: P('hosts', 'static table lookup for hostnames', '/etc/hosts', 'This manual page describes the format of the /etc/hosts file. This file is a simple text file that associates IP addresses with hostnames, one line per IP address.'),
   };
 })();
 
@@ -251,7 +244,7 @@ window.LAB_MAN = (function () {
   LAB.emit = (n, d) => { (listeners[n] || []).forEach(f => { try { f(d); } catch (e) { console.error(e); } }); };
   LAB.sleep = ms => new Promise(r => setTimeout(r, ms));
   /* 메시지 언어 (ko = 한국어 설치 CentOS, en = 영어) */
-  LAB.lang = (function () { try { return localStorage.getItem('linuxlab.lang') || 'ko'; } catch (e) { return 'ko'; } })();
+  LAB.lang = 'en';
   LAB.setLang = l => { LAB.lang = l; try { localStorage.setItem('linuxlab.lang', l); } catch (e) { } LAB.emit('lang', l); };
   const TR = [
     [/^ls: cannot access (.+?): /, 'ls: $1에 접근할 수 없습니다: '],
@@ -329,8 +322,8 @@ window.LAB_MAN = (function () {
     const st = {
       ino: 1310000, pid: 2340, hostnameStatic: '', hostname: 'localhost',
       users: {
-        root: { uid: 0, gid: 0, home: '/root', shell: '/bin/bash', hasPassword: true, gecos: 'Super User' },
-        user1: { uid: 1000, gid: 1000, home: HOME0, shell: '/bin/bash', hasPassword: true, gecos: 'user1' },
+        root: { uid: 0, gid: 0, home: '/root', shell: '/bin/bash', hasPassword: true, pw: '1234', gecos: 'Super User' },
+        user1: { uid: 1000, gid: 1000, home: HOME0, shell: '/bin/bash', hasPassword: true, pw: '1234', gecos: 'user1' },
       },
       groups: {
         root: { gid: 0, members: [] }, bin: { gid: 1, members: [] }, daemon: { gid: 2, members: [] }, sys: { gid: 3, members: [] },
@@ -371,8 +364,8 @@ window.LAB_MAN = (function () {
     ['Desktop', 'Documents', 'Downloads', 'Music', 'Pictures', 'Public', 'Templates', 'Videos'].forEach(n => D(HOME0 + '/' + n, 0o755, 1000, 1000));
     F(HOME0 + '/.bashrc', BASHRC, 0o644, 1000, 1000); F(HOME0 + '/.bash_profile', PROFILE, 0o644, 1000, 1000);
     F(HOME0 + '/.bash_logout', '# ~/.bash_logout\n\n', 0o644, 1000, 1000);
-    F(HOME0 + '/test2.sh', '#!/bin/bash\necho "Hello, Linux!"\necho "오늘 날짜: $(date +%F)"\n', 0o664, 1000, 1000);
-    F(HOME0 + '/Documents/linux_note.txt', 'Linux = 커널(kernel)\nShell = 명령어 해석기(bash)\n루트 디렉토리 = /\n홈 디렉토리 = ~\n', 0o664, 1000, 1000);
+    F(HOME0 + '/test2.sh', '#!/bin/bash\necho "Hello, Linux!"\necho "Today: $(date +%F)"\n', 0o664, 1000, 1000);
+    F(HOME0 + '/Documents/linux_note.txt', 'Linux = kernel\nShell = command interpreter (bash)\nroot directory = /\nhome directory = ~\n', 0o664, 1000, 1000);
     F('/var/spool/mail/user1', '', 0o660, 1000, 12);
     BIN.forEach(n => F('/usr/bin/' + n, '\u007fELF', 0o755));
     ['useradd', 'userdel', 'usermod', 'adduser', 'reboot', 'shutdown'].forEach(n => F('/usr/sbin/' + n, '\u007fELF', 0o755));
@@ -1082,6 +1075,7 @@ window.LAB_MAN = (function () {
   LAB.errMsg = errMsg;
 
   /* ---------------- sudo / su 지원 ---------------- */
+  LAB.checkPw = (name, pw) => { const u = S.users[name]; if (!u || !u.hasPassword || !pw || pw === '\u0004') return false; return u.pw == null ? true : pw === u.pw; };
   LAB.sudoAuth = async function (io) {
     const sh = io.sh; const tab = io.tab; const user = sh.user;
     if (S.users[user].uid === 0) return true;
@@ -1102,7 +1096,8 @@ window.LAB_MAN = (function () {
     for (let i = 0; i < 3; i++) {
       const pw = await readLineOn(tab, { prompt: `[sudo] password for ${user}: `, hidden: true });
       if (pw === null) return false;
-      if (pw && pw !== '\u0004') { tab.sudoUntil[user] = Date.now() + 15 * 60 * 1000; return true; }
+      if (LAB.checkPw(user, pw)) { tab.sudoUntil[user] = Date.now() + 15 * 60 * 1000; return true; }
+      await LAB.sleep(900);
       if (i < 2) io.err('Sorry, try again.\n');
     }
     io.err('sudo: 3 incorrect password attempts\n'); return false;
@@ -1156,7 +1151,7 @@ window.LAB_MAN = (function () {
     const t = active; t.closed = false; newShell(t); t.out.innerHTML = ''; els.closed.hidden = true; banner(t); renderTitle(); renderTabs(); renderInput(); LAB.term.focus();
   }
   LAB.reboot = async function () {
-    els.boot.hidden = false; els.boot.querySelector('.boot-msg').textContent = '다시 시작하는 중…';
+    els.boot.hidden = false; els.boot.querySelector('.boot-msg').textContent = 'Rebooting…';
     await LAB.sleep(1400);
     S.hostnameStatic = readHostnameFile() || ''; S.hostname = S.hostnameStatic || 'localhost';
     tabs.splice(0); nextPts = 0; const t = makeTab(); active = null; switchTab(t); banner(t);
@@ -1178,8 +1173,7 @@ window.LAB_MAN = (function () {
   LAB.flash = flash;
 
   function banner(tab) {
-    if (tab.bannerText) { printTo(tab, tab.bannerText + '\n\n', 'dim'); return; }
-    printTo(tab, 'CentOS Stream 10 실습용 가상 터미널  ·  도움말: help  ·  자동 완성: Tab  ·  이전 명령: ↑  ·  중단: Ctrl+C\n\n', 'dim');
+    /* 실제 GNOME 터미널처럼 안내 문구 없이 프롬프트만 */
   }
 
   /* ---------------- 날짜 포맷 ---------------- */
@@ -1241,7 +1235,7 @@ window.LAB_MAN = (function () {
           else if (k === 'g' || k === 'Home') top = 0; else if (k === 'G' || k === 'End') top = max;
           else if (k === '/') searching = '';
           else if (k === 'n') find(1); else if (k === 'N') find(-1);
-          else if (k === 'h') msg = 'q:종료  Space:다음 쪽  b:이전 쪽  /단어:검색  n:다음 결과';
+          else if (k === 'h') msg = 'q:Quit  SPACE:Forward  b:Backward  /pattern:Search  n:Next match';
           h.render(LAB.fsLayer()); return true;
           function find(dir, fromTop) {
             if (!search) return;
@@ -1283,14 +1277,6 @@ window.LAB_MAN = (function () {
     LAB.emit('ready', {});
   };
 })();
-/* 언어 버튼 */
-(function (LAB) {
-  function sync() { ['ko', 'en'].forEach(l => { const b = document.getElementById('lang-' + l); if (b) { b.classList.toggle('on', LAB.lang === l); b.setAttribute('aria-pressed', LAB.lang === l); } }); }
-  LAB.on('ready', () => {
-    sync();
-    document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => { LAB.setLang(b.dataset.lang); sync(); LAB.flash(b.dataset.lang === 'ko' ? '메시지를 한국어(한국어로 설치한 CentOS)로 보여 줘요.' : 'Messages are now shown in English.'); LAB.term.focus(); }));
-  });
-})(window.LAB);
 
 /* 리눅스 실습 터미널 — 명령어 구현 (출력·에러 문구는 CentOS Stream 10 coreutils/bash 기준) */
 (function (LAB) {
@@ -1467,10 +1453,10 @@ window.LAB_MAN = (function () {
     };
     dirs.forEach((d, i) => walk(d, i === 0));
     return code;
-  }, { help: '디렉토리 내용 보기 (-l 자세히, -a 숨김 포함, -d 디렉토리 자체, -R 하위까지, -F 종류 표시, -u 접근 시간)' });
+  }, { help: 'list directory contents' });
 
   /* ======================= 디렉토리 ======================= */
-  cmd('pwd', async (argv, io) => { io.out(io.sh.cwd + '\n'); return 0; }, { help: '현재 작업 디렉토리 출력' });
+  cmd('pwd', async (argv, io) => { io.out(io.sh.cwd + '\n'); return 0; }, { help: 'print name of current/working directory' });
   cmd('cd', async (argv, io) => {
     const sh = io.sh; const a = argv.slice(1).filter(x => x !== '-L' && x !== '-P');
     if (a.length > 1) { io.err('bash: cd: too many arguments\n'); return 1; }
@@ -1482,7 +1468,7 @@ window.LAB_MAN = (function () {
     if (r.node.type !== 'd') { io.err(`bash: cd: ${t}: Not a directory\n`); return 1; }
     if (!FS.can(r.node, 'x', sh)) { io.err(`bash: cd: ${t}: Permission denied\n`); return 1; }
     sh.cwd = r.abs; return 0;
-  }, { help: '디렉토리 이동 (인자 없으면 홈, - 이전 위치, .. 상위)' });
+  }, { help: 'change the shell working directory' });
 
   cmd('mkdir', async (argv, io) => {
     const { o, a } = getopt(argv, 'm', { parents: 'p', verbose: 'v', mode: 'm' });
@@ -1504,7 +1490,7 @@ window.LAB_MAN = (function () {
       catch (e) { io.err(`mkdir: cannot create directory ${lq(t)}: ${LAB.errMsg(e.code)}\n`); code = 1; }
     }
     return code;
-  }, { help: '디렉토리 만들기 (-p 중간 디렉토리까지)' });
+  }, { help: 'make directories' });
 
   cmd('rmdir', async (argv, io) => {
     const { o, a } = getopt(argv, '', { parents: 'p' });
@@ -1524,7 +1510,7 @@ window.LAB_MAN = (function () {
       if (o.p) { let p = t.replace(/\/+$/, ''); while (p.includes('/')) { p = p.slice(0, p.lastIndexOf('/')); if (!p || !one(p)) break; } }
     }
     return code;
-  }, { help: '빈 디렉토리 삭제' });
+  }, { help: 'remove empty directories' });
 
   /* ======================= 파일 보기 ======================= */
   async function readArg(t, io, name) {
@@ -1588,7 +1574,7 @@ window.LAB_MAN = (function () {
       } catch (e) { io.err(`cat: ${t}: ${LAB.errMsg(e.code)}\n`); code = 1; }
     }
     return code;
-  }, { help: '파일 내용 출력 (cat > 파일: 키보드로 작성, Ctrl+D 저장) -n 줄 번호' });
+  }, { help: 'concatenate files and print on the standard output' });
 
   function headTail(isTail) {
     return async (argv, io) => {
@@ -1615,8 +1601,8 @@ window.LAB_MAN = (function () {
       return code;
     };
   }
-  cmd('head', headTail(false), { help: '앞부분 출력 (-n 줄 수, -c 바이트)' });
-  cmd('tail', headTail(true), { help: '뒷부분 출력 (-n 줄 수, -n +K K번째 줄부터, -f 계속 지켜보기)' });
+  cmd('head', headTail(false), { help: 'output the first part of files' });
+  cmd('tail', headTail(true), { help: 'output the last part of files' });
 
   async function pagerCmd(argv, io, kind) {
     const { a } = getopt(argv, '');
@@ -1636,8 +1622,8 @@ window.LAB_MAN = (function () {
     await LAB.pager(io, text, { more: kind === 'more', title: a[0] || '' });
     return code;
   }
-  cmd('more', (argv, io) => pagerCmd(argv, io, 'more'), { help: '한 화면씩 보기 (Space 다음, q 종료)' });
-  cmd('less', (argv, io) => pagerCmd(argv, io, 'less'), { help: '앞뒤로 움직이며 보기 (Space/b, /검색, q 종료)' });
+  cmd('more', (argv, io) => pagerCmd(argv, io, 'more'), { help: 'file perusal filter for crt viewing' });
+  cmd('less', (argv, io) => pagerCmd(argv, io, 'less'), { help: 'opposite of more' });
 
   cmd('wc', async (argv, io) => {
     const { o, a } = getopt(argv, '', { lines: 'l', words: 'w', bytes: 'c', chars: 'm' });
@@ -1655,7 +1641,7 @@ window.LAB_MAN = (function () {
       io.out(parts.join(' ') + (r[3] ? ' ' + r[3] : '') + '\n');
     });
     return code;
-  }, { help: '줄·단어·바이트 수 세기 (-l 줄 수)' });
+  }, { help: 'print newline, word, and byte counts for each file' });
 
   cmd('grep', async (argv, io) => {
     const { o, a } = getopt(argv, 'e', { 'ignore-case': 'i', 'line-number': 'n', 'invert-match': 'v', count: 'c', 'files-with-matches': 'l', 'word-regexp': 'w', recursive: 'r', color: 'color' });
@@ -1691,7 +1677,7 @@ window.LAB_MAN = (function () {
     };
     for (const t of files) { if (t === '-') doText(io.stdin || '', '(standard input)'); else walk(t); }
     return code || (found ? 0 : 1);
-  }, { help: '패턴이 들어 있는 줄 찾기 (-i 대소문자 무시, -n 줄 번호, -v 반대)' });
+  }, { help: 'print lines that match patterns' });
 
   /* ======================= 파일 만들기·복사·이동·삭제 ======================= */
   cmd('touch', async (argv, io) => {
@@ -1708,7 +1694,7 @@ window.LAB_MAN = (function () {
       try { FS.create(t, 'f', io.sh); } catch (e) { io.err(`touch: cannot touch ${q(t)}: ${LAB.errMsg(e.code)}\n`); code = 1; }
     }
     return code;
-  }, { help: '빈 파일 만들기 / 시간 갱신' });
+  }, { help: 'change file timestamps' });
 
   function canDelete(r, sh) {
     const p = r.parent; if (!FS.can(p, 'w', sh) || !FS.can(p, 'x', sh)) return false;
@@ -1751,7 +1737,7 @@ window.LAB_MAN = (function () {
       if (!rmTree(r, t)) code = 1;
     }
     return code;
-  }, { help: '파일 삭제 (-r 디렉토리까지, -f 강제, -i 확인)' });
+  }, { help: 'remove files or directories' });
 
   function cloneNode(n, sh, preserve) {
     const u = LAB.users.get(sh.euser);
@@ -1796,7 +1782,7 @@ window.LAB_MAN = (function () {
       if (o.v) io.out(`${q(s)} -> ${q(target)}\n`);
     }
     return code;
-  }, { help: '복사 (-r 디렉토리 복사)' });
+  }, { help: 'copy files and directories' });
 
   cmd('mv', async (argv, io) => {
     const { o, a } = getopt(argv, '', { verbose: 'v', interactive: 'i', force: 'f' });
@@ -1824,7 +1810,7 @@ window.LAB_MAN = (function () {
       if (o.v) io.out(`renamed ${q(s)} -> ${q(target)}\n`);
     }
     return code;
-  }, { help: '이동 / 이름 바꾸기' });
+  }, { help: 'move (rename) files' });
 
   cmd('ln', async (argv, io) => {
     const { o, a } = getopt(argv, '', { symbolic: 's', force: 'f' });
@@ -1845,7 +1831,7 @@ window.LAB_MAN = (function () {
     if (!pr.parent || !FS.can(pr.parent, 'w', sh)) { io.err(`ln: failed to create hard link ${q(name)}: Permission denied\n`); return 1; }
     tr.node.nlink = (tr.node.nlink || 1) + 1; tr.node.ctime = Date.now(); pr.parent.children[pr.name] = tr.node;
     return 0;
-  }, { help: '링크 만들기 (-s 심볼릭 링크)' });
+  }, { help: 'make links between files' });
 
   cmd('mkfifo', async (argv, io) => {
     const { o, a } = getopt(argv, 'm');
@@ -1853,7 +1839,7 @@ window.LAB_MAN = (function () {
     let code = 0;
     for (const t of a) { try { FS.create(t, 'p', io.sh, o.m ? parseInt(o.m, 8) : null); } catch (e) { io.err(`mkfifo: cannot create fifo ${q(t)}: ${LAB.errMsg(e.code)}\n`); code = 1; } }
     return code;
-  }, { help: '이름 있는 파이프(FIFO) 만들기' });
+  }, { help: 'make FIFOs (named pipes)' });
 
   /* ======================= 정보 ======================= */
   function nsTime(ms, ino) {
@@ -1887,7 +1873,7 @@ window.LAB_MAN = (function () {
       io.out(`${L.acc}: ${nsTime(n.atime, n.ino)}\n${L.mod}: ${nsTime(n.mtime, n.ino + 1)}\n${L.chg}: ${nsTime(n.ctime, n.ino + 2)}\n${L.birth}: ${nsTime(n.btime, n.ino + 3)}\n`);
     }
     return code;
-  }, { help: '파일 상태 (크기, inode, 권한, Access/Modify/Change/Birth 시간)' });
+  }, { help: 'display file or file system status' });
 
   cmd('file', async (argv, io) => {
     const { a } = getopt(argv, ''); let code = 0;
@@ -1915,7 +1901,7 @@ window.LAB_MAN = (function () {
       io.out(`${t}: ${d}\n`);
     }
     return code;
-  }, { help: '파일 종류 확인' });
+  }, { help: 'determine file type' });
 
   /* chmod */
   function applyMode(cur, spec) {
@@ -1952,7 +1938,7 @@ window.LAB_MAN = (function () {
       doNode(r.node, t);
     }
     return code;
-  }, { help: '권한 바꾸기 (755, u+x, go-w ...)' });
+  }, { help: 'change file mode bits' });
 
   cmd('chown', async (argv, io) => {
     const args = argv.slice(1).filter(x => x !== '-R'); const R = argv.includes('-R');
@@ -1970,7 +1956,7 @@ window.LAB_MAN = (function () {
       doN(r.node);
     }
     return code;
-  }, { help: '소유자 바꾸기 (root만)' });
+  }, { help: 'change file owner and group' });
 
   /* ======================= 시스템 정보 ======================= */
   const KREL = '6.12.0-55.el10.x86_64', KVER = '#1 SMP PREEMPT_DYNAMIC Mon Feb 10 12:34:56 UTC 2025';
@@ -1987,7 +1973,7 @@ window.LAB_MAN = (function () {
     if (o.i) parts.push('x86_64');
     if (all || o.o) parts.push('GNU/Linux');
     io.out(parts.join(' ') + '\n'); return 0;
-  }, { help: '운영체제·커널 정보 (-a 전부, -s -n -r -v -m -p -i -o)' });
+  }, { help: 'print system information' });
 
   cmd('hostname', async (argv, io) => {
     const { o, a } = getopt(argv, '', { 'all-ip-addresses': 'I', 'ip-address': 'i', fqdn: 'f', short: 's' });
@@ -1996,7 +1982,7 @@ window.LAB_MAN = (function () {
     if (!a.length) { io.out(S().hostname + '\n'); return 0; }
     if (LAB.users.get(io.sh.euser).uid !== 0) { io.err('hostname: you must be root to change the host name\n'); return 1; }
     S().hostname = a[0]; return 0;
-  }, { help: '호스트 이름 보기 / 일시 변경 (sudo hostname 이름)' });
+  }, { help: 'show or set the system\'s host name' });
 
   cmd('hostnamectl', async (argv, io) => {
     const a = argv.slice(1).filter(x => !x.startsWith('-'));
@@ -2020,9 +2006,9 @@ window.LAB_MAN = (function () {
       S().hostname = a[1]; S().hostnameStatic = a[1]; return 0;
     }
     io.err(`Unknown command verb '${sub}'.\n`); return 1;
-  }, { help: '호스트 정보 보기 / 영구 변경 (sudo hostnamectl set-hostname 이름)' });
+  }, { help: 'Control the system hostname' });
 
-  cmd('whoami', async (argv, io) => { io.out(io.sh.euser + '\n'); return 0; }, { help: '현재 사용자 이름' });
+  cmd('whoami', async (argv, io) => { io.out(io.sh.euser + '\n'); return 0; }, { help: 'print effective user name' });
   cmd('who', async (argv, io) => {
     const { o } = getopt(argv, '', { all: 'a', boot: 'b', 'count': 'q' });
     const boot = new Date(Date.now() - 1000 * 60 * 47); const p = n => String(n).padStart(2, '0');
@@ -2034,8 +2020,8 @@ window.LAB_MAN = (function () {
     }
     io.out(`user1    seat0        ${dt(login)} (login screen)\nuser1    tty2         ${dt(login)} (tty2)\n`);
     return 0;
-  }, { help: '로그인한 사용자 목록 (-a 부팅 시간 등 전부)' });
-  cmd('tty', async (argv, io) => { if (io.stdin != null && !io.toTerm) { io.out('not a tty\n'); return 1; } io.out('/dev/' + io.tab.tty + '\n'); return 0; }, { help: '현재 터미널 장치 이름 (pts/0 = 가상 터미널)' });
+  }, { help: 'show who is logged on' });
+  cmd('tty', async (argv, io) => { if (io.stdin != null && !io.toTerm) { io.out('not a tty\n'); return 1; } io.out('/dev/' + io.tab.tty + '\n'); return 0; }, { help: 'print the file name of the terminal connected to standard input' });
   cmd('id', async (argv, io) => {
     const { o, a } = getopt(argv, '', { user: 'u', group: 'g', groups: 'G', name: 'n' });
     const name = a[0] || io.sh.euser; const u = LAB.users.get(name);
@@ -2047,14 +2033,14 @@ window.LAB_MAN = (function () {
     const ctx = a[0] ? '' : (u.uid === 0 ? ' context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023' : ' context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023');
     io.out(`uid=${u.uid}(${name}) gid=${u.gid}(${gs[0]}) groups=${gs.map(g => `${S().groups[g].gid}(${g})`).join(',')}${ctx}\n`);
     return 0;
-  }, { help: '사용자 UID/GID/그룹 확인 (id 사용자)' });
+  }, { help: 'print real and effective user and group IDs' });
   cmd('groups', async (argv, io) => {
     const a = argv.slice(1);
     if (!a.length) { io.out(U.groupsOf(io.sh.euser).join(' ') + '\n'); return 0; }
     let code = 0;
     a.forEach(n => { if (!LAB.users.get(n)) { io.err(`groups: ${lq(n)}: no such user\n`); code = 1; } else io.out(`${n} : ${U.groupsOf(n).join(' ')}\n`); });
     return code;
-  }, { help: '소속 그룹' });
+  }, { help: 'print the groups a user is in' });
 
   /* date */
   function parseDateStr(s, base) {
@@ -2090,7 +2076,7 @@ window.LAB_MAN = (function () {
     let out = LAB.fmtDate(d, fmt ? fmt.slice(1) : null);
     if (o.u && !fmt) out = out.replace(/ (KST|UTC|[+-]\d+) /, ' UTC ');
     io.out(out + '\n'); return 0;
-  }, { help: '날짜·시간 (+%Y-%m-%d 형식, -d "yesterday")' });
+  }, { help: 'print or set the system date and time' });
 
   cmd('seq', async (argv, io) => {
     const args = []; let sep = '\n', width = false, fmt = null;
@@ -2116,7 +2102,7 @@ window.LAB_MAN = (function () {
     if (width && !fmt) { const w = Math.max(...strs.map(s => s.replace('-', '').length)); strs = strs.map(s => s.startsWith('-') ? '-' + s.slice(1).padStart(w, '0') : s.padStart(w, '0')); }
     if (strs.length) io.out(strs.join(sep) + '\n');
     return 0;
-  }, { help: '숫자 나열 (seq 5, seq 2 10, seq 1 2 10, -s 구분자, -w 자릿수 맞춤)' });
+  }, { help: 'print a sequence of numbers' });
 
   cmd('echo', async (argv, io) => {
     let a = argv.slice(1), nl = true, e = false;
@@ -2124,7 +2110,7 @@ window.LAB_MAN = (function () {
     let s = a.join(' ');
     if (e) s = s.replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\\\/g, '\\');
     io.out(s + (nl ? '\n' : '')); return 0;
-  }, { help: '문자열 출력 (echo $$ 현재 셸 PID)' });
+  }, { help: 'display a line of text' });
 
   /* ======================= 사용자 관리 ======================= */
   const isRoot = io => LAB.users.get(io.sh.euser).uid === 0;
@@ -2146,7 +2132,7 @@ window.LAB_MAN = (function () {
     const spool = FS.lookupAbs('/var/spool/mail');
     if (spool) { if (spool.children[name]) io.err('Creating mailbox file: File exists\n'); else { const m = FS.mkNode('f', name, 0o660, u.uid, 12); spool.children[name] = m; } }
     return 0;
-  }, { help: '사용자 추가 (sudo useradd 이름 : CentOS는 홈 디렉토리 자동 생성)' });
+  }, { help: 'create a new user or update default new user information' });
 
   async function newPassword(io, name) {
     const p1 = await io.readLine({ prompt: 'New password: ', hidden: true }); if (p1 === null) return false;
@@ -2154,7 +2140,7 @@ window.LAB_MAN = (function () {
     if (p1.length < 8) io.out('BAD PASSWORD: The password is shorter than 8 characters\n');
     const p2 = await io.readLine({ prompt: 'Retype new password: ', hidden: true }); if (p2 === null) return false;
     if (p1 !== p2) { io.err('Sorry, passwords do not match.\npasswd: Authentication token manipulation error\n'); return false; }
-    LAB.users.get(name).hasPassword = true; io.out('passwd: all authentication tokens updated successfully.\n'); return true;
+    const uu = LAB.users.get(name); uu.hasPassword = true; uu.pw = p1; io.out('passwd: all authentication tokens updated successfully.\n'); return true;
   }
   cmd('passwd', async (argv, io) => {
     const { a } = getopt(argv, '');
@@ -2164,12 +2150,12 @@ window.LAB_MAN = (function () {
     io.out(`Changing password for user ${name}.\n`);
     if (!isRoot(io)) {
       const cur = await io.readLine({ prompt: 'Current password: ', hidden: true }); if (cur === null) return 1;
-      if (!cur) { io.err('passwd: Authentication token manipulation error\npasswd: password unchanged\n'); return 10; }
+      if (!LAB.checkPw(name, cur)) { await LAB.sleep(900); io.err('passwd: Authentication token manipulation error\n'); return 10; }
     }
     return (await newPassword(io, name)) ? 0 : 10;
-  }, { help: '비밀번호 바꾸기 (sudo passwd 사용자)' });
+  }, { help: 'update user\'s authentication tokens' });
 
-  cmd('adduser', async (argv, io) => LAB.exec(['useradd'].concat(argv.slice(1)), io), { help: 'useradd와 같음 (CentOS에서는 useradd로 연결된 링크)' });
+  cmd('adduser', async (argv, io) => LAB.exec(['useradd'].concat(argv.slice(1)), io), { help: 'create a new user (link to useradd)' });
   cmd('_adduser_debian', async (argv, io) => {
     const { a } = getopt(argv, '');
     if (!isRoot(io)) { io.err('fatal: Only root may add a user or group to the system.\n'); return 1; }
@@ -2185,7 +2171,7 @@ window.LAB_MAN = (function () {
     io.out(`info: Adding new user \`${name}' to supplemental / extra groups \`users' ...\ninfo: Adding user \`${name}' to group \`users' ...\n`);
     LAB._S().groups.users.members.push(name);
     return 0;
-  }, { help: '대화형 사용자 추가 (홈·비밀번호까지)' });
+  }, { help: 'add a user (Debian style)' });
 
   cmd('userdel', async (argv, io) => {
     const { o, a } = getopt(argv, '', { remove: 'r', force: 'f' });
@@ -2203,8 +2189,8 @@ window.LAB_MAN = (function () {
     }
     LAB.users.del(name);
     return 0;
-  }, { help: '사용자 삭제 (-r 홈 디렉토리까지, -f 강제)' });
-  cmd('deluser', async (argv, io) => LAB.exec(['userdel'].concat(argv.slice(1).map(x => x === '--remove-home' ? '-r' : x)), io), { help: '사용자 삭제(userdel과 비슷)' });
+  }, { help: 'delete a user account and related files' });
+  cmd('deluser', async (argv, io) => LAB.exec(['userdel'].concat(argv.slice(1).map(x => x === '--remove-home' ? '-r' : x)), io), { help: 'remove a user (Debian style)' });
 
   /* ======================= sudo / su / exit ======================= */
   cmd('sudo', async (argv, io) => {
@@ -2224,7 +2210,7 @@ window.LAB_MAN = (function () {
     if (!LAB.commands[name] && !name.includes('/')) { io.err(`sudo: ${name}: command not found\n`); return 1; }
     if (LAB.builtins.includes(name) && name !== 'echo' && name !== 'kill' && name !== 'pwd') { io.err(`sudo: ${name}: command not found\n`); return 1; }
     return LAB.withEuser(io.tab, 'root', () => LAB.exec(a, io));
-  }, { help: '관리자(root) 권한으로 실행' });
+  }, { help: 'execute a command as another user' });
 
   cmd('su', async (argv, io) => {
     const a = argv.slice(1); const login = a.includes('-') || a.includes('-l') || a.includes('--login');
@@ -2234,23 +2220,23 @@ window.LAB_MAN = (function () {
     if (!isRoot(io)) {
       const pw = await io.readLine({ prompt: 'Password: ', hidden: true });
       if (pw === null) return 1;
-      if (!t.hasPassword || !pw || pw === '\u0004') { await LAB.sleep(1200); io.err('su: Authentication failure\n'); return 1; }
+      if (!LAB.checkPw(name, pw)) { await LAB.sleep(1200); io.err('su: Authentication failure\n'); return 1; }
     }
     const disp = 'su ' + (login ? '- ' : '') + name;
     LAB.pushShell(io.tab, name, login, disp);
     return 0;
-  }, { help: '다른 사용자로 전환 (su 사용자, su - 사용자: 로그인 셸)' });
+  }, { help: 'run a command with substitute user and group ID' });
 
   cmd('exit', async (argv, io) => {
     const tab = io.tab; const p = io.sh.proc;
     LAB.term.print(p.login ? 'logout\n' : 'exit\n');
     LAB.popShell(tab);
     return parseInt(argv[1] || '0', 10) || 0;
-  }, { help: '현재 셸 종료 (su로 들어온 셸이면 이전 사용자로 돌아감)' });
+  }, { help: 'exit the shell' });
   cmd('logout', async (argv, io) => {
     if (!io.sh.proc.login) { io.err("bash: logout: not login shell: use `exit'\n"); return 1; }
     LAB.term.print('logout\n'); LAB.popShell(io.tab); return 0;
-  }, { help: '로그인 셸 종료' });
+  }, { help: 'exit a login shell' });
 
   /* ======================= 프로세스 ======================= */
   const SYSPROCS = [
@@ -2293,7 +2279,7 @@ window.LAB_MAN = (function () {
       list.forEach(p => io.out(`${String(p.pid).padStart(7)} ${p.tty.padEnd(8)} 00:00:00 ${p.cmdline.split(' ')[0].replace(/^.*\//, '').replace(/^-/, '').slice(0, 15)}\n`));
     }
     return list.length ? 0 : 1;
-  }, { help: '프로세스 목록 (-f 자세히, -ef 전체, -fp PID)' });
+  }, { help: 'report a snapshot of the current processes' });
 
   function treeLines(node, prefix) {
     // node: {label, kids:[]}  pstree 형식
@@ -2347,7 +2333,7 @@ window.LAB_MAN = (function () {
       { label: lab('systemd-journal', 312), kids: [] }] };
     io.out(treeLines(root).join('\n') + '\n');
     return 0;
-  }, { help: '프로세스를 나무 모양으로 (-p PID 표시, pstree -p PID)' });
+  }, { help: 'display a tree of processes' });
 
   cmd('kill', async (argv, io) => {
     let sig = 'TERM'; const pids = [];
@@ -2378,13 +2364,13 @@ window.LAB_MAN = (function () {
       } else if (tab && tab !== io.tab && !tab.closed) { /* 다른 탭 */ }
     }
     return code;
-  }, { help: '프로세스에 신호 보내기 (kill PID, kill -9 PID 강제 종료)' });
+  }, { help: 'send a signal to a process' });
 
   cmd('sleep', async (argv, io) => {
     const s = parseFloat(argv[1]); if (isNaN(s)) { io.err(argv[1] ? `sleep: invalid time interval ${q(argv[1])}\n` : "sleep: missing operand\nTry 'sleep --help' for more information.\n"); return 1; }
     const end = Date.now() + s * 1000; while (Date.now() < end && !io.aborted) await LAB.sleep(50);
     if (io.aborted) { LAB.term.print('^C\n'); return 130; } return 0;
-  }, { help: 'N초 기다리기' });
+  }, { help: 'delay for a specified amount of time' });
 
   /* ping */
   function lookupHost(h) {
@@ -2421,17 +2407,17 @@ window.LAB_MAN = (function () {
     io.out(`${sent} packets transmitted, ${recv} received, ${loop ? '' : `+${Math.floor(sent / 3)} errors, `}${loss}% packet loss, time ${Math.max(0, el - 1000 + Math.floor(Math.random() * 60))}ms\n`);
     if (recv) { const mn = Math.min(...times), mx = Math.max(...times), av = times.reduce((s, x) => s + x, 0) / times.length; const md = Math.sqrt(times.reduce((s, x) => s + (x - av) ** 2, 0) / times.length); io.out(`rtt min/avg/max/mdev = ${mn.toFixed(3)}/${av.toFixed(3)}/${mx.toFixed(3)}/${md.toFixed(3)} ms\n`); }
     return recv ? 0 : 1;
-  }, { help: '네트워크 응답 확인 (Ctrl+C로 멈춤, -c 횟수)' });
+  }, { help: 'send ICMP ECHO_REQUEST to network hosts' });
 
   /* ======================= 셸 내장·기타 ======================= */
-  cmd('clear', async (argv, io) => { LAB.term.clear(); return 0; }, { help: '화면 지우기 (Ctrl+L)' });
+  cmd('clear', async (argv, io) => { LAB.term.clear(); return 0; }, { help: 'clear the terminal screen' });
   cmd('history', async (argv, io) => {
     const h = io.tab.history;
     if (argv[1] === '-c') { h.splice(0); try { localStorage.setItem('linuxlab.hist.v1', '[]'); } catch (e) { } return 0; }
     const n = argv[1] ? parseInt(argv[1], 10) : h.length;
     h.slice(-n).forEach((c, i) => io.out(`${String(h.length - Math.min(n, h.length) + i + 1).padStart(5)}  ${c}\n`));
     return 0;
-  }, { help: '입력한 명령 기록 (!! 직전 명령 다시)' });
+  }, { help: 'display the command history list' });
   cmd('type', async (argv, io) => {
     let code = 0;
     for (const n of argv.slice(1)) {
@@ -2442,7 +2428,7 @@ window.LAB_MAN = (function () {
       else { io.err(`bash: type: ${n}: not found\n`); code = 1; }
     }
     return code;
-  }, { help: '명령 종류 (셸 내장 / 별칭 / 외부 유틸리티)' });
+  }, { help: 'display information about command type' });
   cmd('which', async (argv, io) => {
     let code = 0;
     for (const n of argv.slice(1).filter(x => !x.startsWith('-'))) {
@@ -2450,25 +2436,25 @@ window.LAB_MAN = (function () {
       else { io.err(`/usr/bin/which: no ${n} in (/home/user1/.local/bin:/home/user1/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin)\n`); code = 1; }
     }
     return code;
-  }, { help: '명령 파일 위치' });
+  }, { help: 'shows the full path of (shell) commands' });
   cmd('alias', async (argv, io) => {
     if (argv.length === 1) { Object.keys(LAB.aliases).sort().forEach(k => io.out(`alias ${k}='${LAB.aliases[k]}'\n`)); return 0; }
     for (const x of argv.slice(1)) { const m = x.match(/^([^=]+)=(.*)$/); if (m) LAB.aliases[m[1]] = m[2]; else if (LAB.aliases[x]) io.out(`alias ${x}='${LAB.aliases[x]}'\n`); else { io.err(`bash: alias: ${x}: not found\n`); return 1; } }
     return 0;
-  }, { help: '별칭' });
-  cmd('unalias', async (argv, io) => { argv.slice(1).forEach(x => delete LAB.aliases[x]); return 0; }, { help: '별칭 지우기' });
-  cmd('true', async () => 0, { help: '항상 성공' });
-  cmd('false', async () => 1, { help: '항상 실패' });
-  cmd('umask', async (argv, io) => { io.out('0002\n'); return 0; }, { help: '기본 권한 마스크' });
-  cmd('export', async (argv, io) => { argv.slice(1).forEach(x => { const m = x.match(/^([A-Za-z_]\w*)=(.*)$/); if (m) { io.tab.vars = io.tab.vars || {}; io.tab.vars[m[1]] = m[2]; } }); return 0; }, { help: '환경 변수 설정' });
-  cmd('jobs', async (argv, io) => { if (io.tab.stopped) io.out(`[1]+  Stopped                 ${io.tab.stopped.display}\n`); return 0; }, { help: '중지된 작업' });
+  }, { help: 'define or display aliases' });
+  cmd('unalias', async (argv, io) => { argv.slice(1).forEach(x => delete LAB.aliases[x]); return 0; }, { help: 'remove alias definitions' });
+  cmd('true', async () => 0, { help: 'do nothing, successfully' });
+  cmd('false', async () => 1, { help: 'do nothing, unsuccessfully' });
+  cmd('umask', async (argv, io) => { io.out('0002\n'); return 0; }, { help: 'display or set file mode mask' });
+  cmd('export', async (argv, io) => { argv.slice(1).forEach(x => { const m = x.match(/^([A-Za-z_]\w*)=(.*)$/); if (m) { io.tab.vars = io.tab.vars || {}; io.tab.vars[m[1]] = m[2]; } }); return 0; }, { help: 'set export attribute for shell variables' });
+  cmd('jobs', async (argv, io) => { if (io.tab.stopped) io.out(`[1]+  Stopped                 ${io.tab.stopped.display}\n`); return 0; }, { help: 'display status of jobs' });
   cmd('fg', async (argv, io) => {
     const j = io.tab.stopped; if (!j) { io.err('bash: fg: current: no such job\n'); return 1; }
     io.tab.stopped = null; LAB.term.print(j.display + '\n');
     const m = j.resume.match(/^cat >> (.+)$/);
     if (m) { const buf = []; const r = await LAB.exec(['cat'], Object.assign({}, io, { stdin: null, toTerm: false, tty: false, out: s => buf.push(s), redir: { outFile: m[1], outAppend: true } })); try { FS.write(m[1], buf.join(''), { append: true }, io.sh); } catch (e) { } return r; }
     return LAB.exec(['cat'], io);
-  }, { help: '중지한 작업 다시 이어서 (Ctrl+Z 후)' });
+  }, { help: 'move job to the foreground' });
 
   cmd('find', async (argv, io) => {
     const a = argv.slice(1); const paths = []; let i = 0;
@@ -2492,13 +2478,13 @@ window.LAB_MAN = (function () {
     };
     for (const p of paths) { const r = FS.resolve(p, {}, io.sh); if (!r.node) { io.err(`find: ${lq(p)}: No such file or directory\n`); code = 1; continue; } walk(p, r.node, 0); }
     return code;
-  }, { help: '파일 찾기 (find . -name "*.txt")' });
+  }, { help: 'search for files in a directory hierarchy' });
 
   cmd('reboot', async (argv, io) => {
     if (!isRoot(io)) { io.err('Call to Reboot failed: Interactive authentication required.\n'); return 1; }
     await LAB.sleep(300); await LAB.reboot(); return 0;
-  }, { help: '재부팅 (sudo reboot) — 일시적으로 바꾼 hostname이 원래대로' });
-  cmd('shutdown', async (argv, io) => { io.err('이 실습 터미널에서는 shutdown 대신 sudo reboot을 써 보세요.\n'); return 1; }, { help: '(실습에서는 sudo reboot 사용)' });
+  }, { help: 'reboot the machine' });
+  cmd('shutdown', async (argv, io) => { io.err('shutdown: use \'sudo reboot\' in this lab environment.\n'); return 1; }, { help: 'halt, power off or reboot the machine' });
 
   async function dnfCmd(argv, io) {
     const name = argv[0]; const sub = argv[1]; const yes = argv.includes('-y');
@@ -2522,8 +2508,8 @@ window.LAB_MAN = (function () {
     if (sub === 'list') { io.out('Installed Packages\nbash.x86_64                     5.2.26-6.el10                @anaconda\ncoreutils.x86_64                9.5-6.el10                   @anaconda\nvim-enhanced.x86_64             2:9.1.083-5.el10             @appstream\n' + (LAB._S().installed.tree ? 'tree.x86_64                     2.1.0-8.el10                 @baseos\n' : '')); return 0; }
     io.err(`No such command: ${sub}. Please use /usr/bin/${name} --help\n`); return 1;
   }
-  cmd('dnf', dnfCmd, { help: '패키지 설치 (sudo dnf install tree) — CentOS·RHEL 계열' });
-  cmd('yum', dnfCmd, { help: 'dnf와 같음 (예전 이름)' });
+  cmd('dnf', dnfCmd, { help: 'DNF package manager' });
+  cmd('yum', dnfCmd, { help: 'redirecting to DNF' });
 
   cmd('tree', async (argv, io) => {
     if (!LAB._S().installed.tree) { io.err('bash: tree: command not found...\n'); return 127; }
@@ -2545,27 +2531,27 @@ window.LAB_MAN = (function () {
     walk(r.node, '', 1);
     io.out(`\n${nd} director${nd === 1 ? 'y' : 'ies'}, ${nf} file${nf === 1 ? '' : 's'}\n`);
     return 0;
-  }, { help: '디렉토리 구조를 나무 모양으로 (먼저 sudo dnf install tree)' });
+  }, { help: 'list contents of directories in a tree-like format' });
 
   /* ======================= help / man ======================= */
   const GROUPS = [
-    ['시스템 정보', ['whoami', 'hostname', 'hostnamectl', 'uname', 'date', 'who', 'tty', 'id', 'groups']],
-    ['디렉토리', ['pwd', 'cd', 'ls', 'mkdir', 'rmdir', 'tree', 'find']],
-    ['파일', ['touch', 'cat', 'head', 'tail', 'more', 'less', 'wc', 'grep', 'seq', 'echo', 'cp', 'mv', 'rm', 'ln', 'mkfifo', 'stat', 'file']],
-    ['권한·사용자', ['chmod', 'chown', 'sudo', 'su', 'useradd', 'adduser', 'userdel', 'passwd']],
-    ['프로세스·셸', ['ps', 'pstree', 'kill', 'exit', 'logout', 'history', 'type', 'which', 'clear', 'sleep', 'jobs', 'fg']],
-    ['편집기·기타', ['vim', 'vi', 'man', 'ping', 'dnf', 'reboot']],
+    ['System info', ['whoami', 'hostname', 'hostnamectl', 'uname', 'date', 'who', 'tty', 'id', 'groups']],
+    ['Directories', ['pwd', 'cd', 'ls', 'mkdir', 'rmdir', 'tree', 'find']],
+    ['Files', ['touch', 'cat', 'head', 'tail', 'more', 'less', 'wc', 'grep', 'seq', 'echo', 'cp', 'mv', 'rm', 'ln', 'mkfifo', 'stat', 'file']],
+    ['Permissions & users', ['chmod', 'chown', 'sudo', 'su', 'useradd', 'adduser', 'userdel', 'passwd']],
+    ['Processes & shell', ['ps', 'pstree', 'kill', 'exit', 'logout', 'history', 'type', 'which', 'clear', 'sleep', 'jobs', 'fg']],
+    ['Editor & misc', ['vim', 'vi', 'man', 'ping', 'dnf', 'reboot']],
   ];
   cmd('help', async (argv, io) => {
     if (argv[1]) return LAB.exec(['man', argv[1]], io);
-    io.out('GNU bash, version 5.2.26(1)-release (x86_64-redhat-linux-gnu) — 실습 터미널에서 쓸 수 있는 명령\n\n');
+    io.out('GNU bash, version 5.2.26(1)-release (x86_64-redhat-linux-gnu)\nCommands available in this terminal:\n\n');
     for (const [g, list] of GROUPS) {
       io.outHTML(`<span class="c-head">[${esc(g)}]</span>\n`, `[${g}]\n`);
       list.forEach(c => { const m = LAB.meta[c] || {}; io.outHTML(`  <span class="c-exe">${esc(c.padEnd(12))}</span>${esc(m.help || '')}\n`, `  ${c.padEnd(12)}${m.help || ''}\n`); });
     }
-    io.out('\n자세한 설명: man 명령어  ·  키: Tab 자동 완성, ↑ 이전 명령, Ctrl+C 중단, Ctrl+L 화면 지우기, Ctrl+Shift+T 새 탭\n');
+    io.out('\nUse `man name\' for more information about a command.\n');
     return 0;
-  }, { help: '명령 목록' });
+  }, { help: 'display information about builtin commands' });
 
   const MAN = window.LAB_MAN || {};
   cmd('man', async (argv, io) => {
@@ -2581,7 +2567,7 @@ window.LAB_MAN = (function () {
     if (!io.toTerm) { io.out(text); return 0; }
     await LAB.pager(io, text, { man: true, title: `Manual page ${name}(${sec}) line 1 (press h for help or q to quit)` });
     return 0;
-  }, { help: '명령 설명서 보기 (q로 나가기)' });
+  }, { help: 'an interface to the system reference manuals' });
 
 })(window.LAB);
 
@@ -3002,7 +2988,7 @@ window.LAB_MAN = (function () {
         else V.info('"' + V.name + '"');
         return;
       case 'h': case 'help':
-        V.err('E149: Sorry, no help for ' + (arg || 'help.txt') + ' (실습용 vim)');
+        V.err('E149: Sorry, no help for ' + (arg || 'help.txt') + '');
         return;
       default:
         V.err('E492: Not an editor command: ' + raw.trim());
@@ -3410,8 +3396,8 @@ window.LAB_MAN = (function () {
     });
   }
 
-  LAB.cmd('vim', runVim, { help: '화면 편집기 vim (i 입력, Esc 명령 모드, :wq 저장 후 종료, :q! 저장 없이 종료)' });
-  LAB.cmd('vi', runVim, { help: 'vi 편집기 (이 실습에서는 vim과 같음)' });
+  LAB.cmd('vim', runVim, { help: 'Vi IMproved, a programmer\'s text editor' });
+  LAB.cmd('vi', runVim, { help: 'Vi IMproved, a programmer\'s text editor' });
 })(window.LAB);
 
 /* missions.js — 오른쪽 실습 과제 패널 (LAB API만 사용) */
@@ -3676,7 +3662,7 @@ window.LAB_MAN = (function () {
           ex: 'uid(사용자 번호) · gid(기본 그룹) · groups(소속 그룹).' },
         { t: '/home 아래를 자세히 보세요.', hint: 'ls -l /home', chk: function (e) { return is(e, 'ls') && /jung/.test(out(e)); },
           ex: '사용자마다 홈 디렉토리가 하나씩 있어요. CentOS 홈 권한은 drwx------ (본인만 접근). 권한 뒤의 점(.)은 SELinux 표시예요.' },
-        { t: 'jung 의 비밀번호를 정하세요.', hint: 'sudo passwd jung', chk: function () { var u = users().jung; return !!u && !!u.hasPassword; },
+        { t: 'jung 의 비밀번호를 1234 로 정하세요. (두 번 입력)', hint: 'sudo passwd jung', chk: function () { var u = users().jung; return !!u && !!u.hasPassword; },
           ex: '화면에 안 보여도 입력되고 있어요. 두 번 똑같이 입력해요.' },
         { t: '홈 디렉토리만 지워 보세요.', hint: 'sudo rm -rf /home/jung', chk: function () { return !exists('/home/jung') && !!users().jung; },
           ex: 'rm -rf = 디렉토리를 통째로 강제 삭제. 계정 정보는 그대로예요.' },
@@ -3694,8 +3680,8 @@ window.LAB_MAN = (function () {
       steps: [
         { t: 'jung 계정을 만드세요.', hint: 'sudo useradd jung', chk: function () { return !!users().jung && exists('/home/jung'); },
           ex: '홈이 없다고 나오면 sudo userdel -rf jung 후 다시 만드세요.' },
-        { t: 'jung 의 비밀번호를 정하세요.', hint: 'sudo passwd jung', chk: function () { var u = users().jung; return !!u && !!u.hasPassword; },
-          ex: 'su 로 들어가려면 비밀번호가 필요해요.' },
+        { t: 'jung 의 비밀번호를 1234 로 정하세요. (두 번 입력)', hint: 'sudo passwd jung', chk: function () { var u = users().jung; return !!u && !!u.hasPassword; },
+          ex: 'su 로 들어가려면 비밀번호가 필요해요. 8자보다 짧으면 BAD PASSWORD 경고가 나오지만 root 가 바꾸는 거라 그대로 설정돼요.' },
         { t: '지금 bash 의 PID 를 확인하세요.', hint: 'echo $$', chk: function (e) {
             var v = out(e).trim(); if (is(e, 'echo') && /^\d+$/.test(v) && st().user === 'user1') { P.data.pid1 = v; return true; } return false; },
           ex: '$$ = 지금 실행 중인 셸(bash)의 PID. 이 번호를 기억해 두세요.' },
@@ -3810,6 +3796,9 @@ window.LAB_MAN = (function () {
       '#missions .dots{display:flex;gap:4px;flex:none}',
       '#missions .dots i{flex:1;height:6px;border-radius:3px;background:var(--m-line)}',
       '#missions .dots i.ok{background:var(--m-ok)} #missions .dots i.cur{background:var(--m-acc)} #missions .dots i.opt{opacity:.45}',
+      '#missions .pwbox{flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;padding:6px 10px;border-radius:8px;background:#ffffff0a;border:1px solid var(--m-line)}',
+      '#missions .pwbox code{font-family:var(--lab-mono,ui-monospace,monospace);font-size:14px;font-weight:700;color:#fce94f;background:#0000004d;padding:0 7px;border-radius:5px}',
+      '#missions .pwbox span{color:var(--m-mut);font-size:12px}',
       '#missions .intro{margin:-4px 0 0;color:var(--m-mut);font-size:12.5px;flex:none}',
       '#missions .tag{display:inline-block;font-size:11px;font-weight:700;padding:0 7px;border-radius:999px;border:1px solid var(--m-acc);color:var(--m-acc);margin-right:6px;vertical-align:1px}',
       /* 방금 완료 */
@@ -3855,9 +3844,9 @@ window.LAB_MAN = (function () {
       '#missions li .opt{font-size:10.5px;margin-left:4px;opacity:.8}',
       '#missions li .ex{grid-column:2;white-space:normal;font-size:12.5px;color:var(--m-fg);opacity:.85;border-left:2px solid var(--m-ok);padding-left:8px;margin-top:3px}',
       /* 아래 */
-      '#missions .foot{flex:none;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--m-line);padding-top:9px;font-size:12px;color:var(--m-mut)}',
-      '#missions .foot label{display:flex;gap:6px;align-items:center;cursor:pointer}',
-      '#missions .foot input{accent-color:var(--m-acc)}',
+      '#missions .mfoot{flex:none;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--m-line);padding-top:9px;font-size:12px;color:var(--m-mut)}',
+      '#missions .mfoot label{display:flex;gap:6px;align-items:center;cursor:pointer}',
+      '#missions .mfoot input{accent-color:var(--m-acc)}',
       '#missions .cfm{flex:none;border:1px solid var(--m-acc);border-radius:9px;padding:10px;font-size:13px;display:flex;flex-direction:column;gap:8px}',
       '#missions .cfm .row{display:flex;gap:6px}',
       '#missions .btn{border:1px solid var(--m-line);background:transparent;border-radius:7px;padding:5px 12px;font-size:12.5px}',
@@ -3904,6 +3893,7 @@ window.LAB_MAN = (function () {
     h.push('<div class="dots" aria-hidden="true">');
     m.steps.forEach(function (s, i) { h.push('<i class="' + (isDone(m, i) ? 'ok' : (i === cur ? 'cur' : '')) + (s.opt ? ' opt' : '') + '"></i>'); });
     h.push('</div>');
+    h.push('<div class="pwbox">🔑 비밀번호 <code>1234</code><span>user1 · root 같음 · 칠 때 화면에 안 보여요(정상)</span></div>');
     h.push('<p class="intro">' + (m.star ? '<span class="tag">⭐ 시험</span>' : '') + esc(m.intro) + '</p>');
 
     // 방금 완료한 단계 해설
@@ -3952,7 +3942,7 @@ window.LAB_MAN = (function () {
       h.push('<div class="cfm" role="alertdialog"><div>모든 과제의 진행 기록과 파일·계정이 처음 상태로 돌아가요. 초기화할까요?</div>' +
         '<div class="row"><button class="btn pri" data-a="resetyes">초기화</button><button class="btn" data-a="resetno">취소</button></div></div>');
     }
-    h.push('<div class="foot"><label><input type="checkbox" data-a="showall"' + (P.showAll ? ' checked' : '') + '> 명령어 항상 보이기</label>' +
+    h.push('<div class="mfoot"><label><input type="checkbox" data-a="showall"' + (P.showAll ? ' checked' : '') + '> 명령어 항상 보이기</label>' +
       '<span>완료 ' + T.fin + '/' + M.length + '과제 · <button class="lnk" data-a="redo">이 과제 처음부터</button> · <button class="lnk" data-a="reset">전체 초기화</button></span></div>');
 
     if (listOpen) {
@@ -4013,7 +4003,7 @@ window.LAB_MAN = (function () {
     P.fin = P.fin || {}; if (complete(m)) P.fin[m.id] = true;
     P.done[m.id] = []; P.data = {}; openHints = {}; recent = null; listOpen = false; confirmOpen = false; P.exOpen = {};
     save();
-    try { LAB.prepare({ setup: m.setup, banner: '── 과제 ' + (M.indexOf(m) + 1) + '. ' + m.title + ' ── 새 실습 환경을 준비했어요 (파일·계정이 처음 상태)' }); } catch (x) { }
+    try { LAB.prepare({ setup: m.setup }); } catch (x) { }
     try { prevCwd = st().cwd || null; } catch (x) { }
     render();
     try { LAB.term.focus(); } catch (x) { }

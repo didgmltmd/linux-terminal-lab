@@ -260,7 +260,7 @@
           ex: 'uid(사용자 번호) · gid(기본 그룹) · groups(소속 그룹).' },
         { t: '/home 아래를 자세히 보세요.', hint: 'ls -l /home', chk: function (e) { return is(e, 'ls') && /jung/.test(out(e)); },
           ex: '사용자마다 홈 디렉토리가 하나씩 있어요. CentOS 홈 권한은 drwx------ (본인만 접근). 권한 뒤의 점(.)은 SELinux 표시예요.' },
-        { t: 'jung 의 비밀번호를 정하세요.', hint: 'sudo passwd jung', chk: function () { var u = users().jung; return !!u && !!u.hasPassword; },
+        { t: 'jung 의 비밀번호를 1234 로 정하세요. (두 번 입력)', hint: 'sudo passwd jung', chk: function () { var u = users().jung; return !!u && !!u.hasPassword; },
           ex: '화면에 안 보여도 입력되고 있어요. 두 번 똑같이 입력해요.' },
         { t: '홈 디렉토리만 지워 보세요.', hint: 'sudo rm -rf /home/jung', chk: function () { return !exists('/home/jung') && !!users().jung; },
           ex: 'rm -rf = 디렉토리를 통째로 강제 삭제. 계정 정보는 그대로예요.' },
@@ -278,8 +278,8 @@
       steps: [
         { t: 'jung 계정을 만드세요.', hint: 'sudo useradd jung', chk: function () { return !!users().jung && exists('/home/jung'); },
           ex: '홈이 없다고 나오면 sudo userdel -rf jung 후 다시 만드세요.' },
-        { t: 'jung 의 비밀번호를 정하세요.', hint: 'sudo passwd jung', chk: function () { var u = users().jung; return !!u && !!u.hasPassword; },
-          ex: 'su 로 들어가려면 비밀번호가 필요해요.' },
+        { t: 'jung 의 비밀번호를 1234 로 정하세요. (두 번 입력)', hint: 'sudo passwd jung', chk: function () { var u = users().jung; return !!u && !!u.hasPassword; },
+          ex: 'su 로 들어가려면 비밀번호가 필요해요. 8자보다 짧으면 BAD PASSWORD 경고가 나오지만 root 가 바꾸는 거라 그대로 설정돼요.' },
         { t: '지금 bash 의 PID 를 확인하세요.', hint: 'echo $$', chk: function (e) {
             var v = out(e).trim(); if (is(e, 'echo') && /^\d+$/.test(v) && st().user === 'user1') { P.data.pid1 = v; return true; } return false; },
           ex: '$$ = 지금 실행 중인 셸(bash)의 PID. 이 번호를 기억해 두세요.' },
@@ -394,6 +394,9 @@
       '#missions .dots{display:flex;gap:4px;flex:none}',
       '#missions .dots i{flex:1;height:6px;border-radius:3px;background:var(--m-line)}',
       '#missions .dots i.ok{background:var(--m-ok)} #missions .dots i.cur{background:var(--m-acc)} #missions .dots i.opt{opacity:.45}',
+      '#missions .pwbox{flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;padding:6px 10px;border-radius:8px;background:#ffffff0a;border:1px solid var(--m-line)}',
+      '#missions .pwbox code{font-family:var(--lab-mono,ui-monospace,monospace);font-size:14px;font-weight:700;color:#fce94f;background:#0000004d;padding:0 7px;border-radius:5px}',
+      '#missions .pwbox span{color:var(--m-mut);font-size:12px}',
       '#missions .intro{margin:-4px 0 0;color:var(--m-mut);font-size:12.5px;flex:none}',
       '#missions .tag{display:inline-block;font-size:11px;font-weight:700;padding:0 7px;border-radius:999px;border:1px solid var(--m-acc);color:var(--m-acc);margin-right:6px;vertical-align:1px}',
       /* 방금 완료 */
@@ -439,9 +442,9 @@
       '#missions li .opt{font-size:10.5px;margin-left:4px;opacity:.8}',
       '#missions li .ex{grid-column:2;white-space:normal;font-size:12.5px;color:var(--m-fg);opacity:.85;border-left:2px solid var(--m-ok);padding-left:8px;margin-top:3px}',
       /* 아래 */
-      '#missions .foot{flex:none;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--m-line);padding-top:9px;font-size:12px;color:var(--m-mut)}',
-      '#missions .foot label{display:flex;gap:6px;align-items:center;cursor:pointer}',
-      '#missions .foot input{accent-color:var(--m-acc)}',
+      '#missions .mfoot{flex:none;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--m-line);padding-top:9px;font-size:12px;color:var(--m-mut)}',
+      '#missions .mfoot label{display:flex;gap:6px;align-items:center;cursor:pointer}',
+      '#missions .mfoot input{accent-color:var(--m-acc)}',
       '#missions .cfm{flex:none;border:1px solid var(--m-acc);border-radius:9px;padding:10px;font-size:13px;display:flex;flex-direction:column;gap:8px}',
       '#missions .cfm .row{display:flex;gap:6px}',
       '#missions .btn{border:1px solid var(--m-line);background:transparent;border-radius:7px;padding:5px 12px;font-size:12.5px}',
@@ -488,6 +491,7 @@
     h.push('<div class="dots" aria-hidden="true">');
     m.steps.forEach(function (s, i) { h.push('<i class="' + (isDone(m, i) ? 'ok' : (i === cur ? 'cur' : '')) + (s.opt ? ' opt' : '') + '"></i>'); });
     h.push('</div>');
+    h.push('<div class="pwbox">🔑 비밀번호 <code>1234</code><span>user1 · root 같음 · 칠 때 화면에 안 보여요(정상)</span></div>');
     h.push('<p class="intro">' + (m.star ? '<span class="tag">⭐ 시험</span>' : '') + esc(m.intro) + '</p>');
 
     // 방금 완료한 단계 해설
@@ -536,7 +540,7 @@
       h.push('<div class="cfm" role="alertdialog"><div>모든 과제의 진행 기록과 파일·계정이 처음 상태로 돌아가요. 초기화할까요?</div>' +
         '<div class="row"><button class="btn pri" data-a="resetyes">초기화</button><button class="btn" data-a="resetno">취소</button></div></div>');
     }
-    h.push('<div class="foot"><label><input type="checkbox" data-a="showall"' + (P.showAll ? ' checked' : '') + '> 명령어 항상 보이기</label>' +
+    h.push('<div class="mfoot"><label><input type="checkbox" data-a="showall"' + (P.showAll ? ' checked' : '') + '> 명령어 항상 보이기</label>' +
       '<span>완료 ' + T.fin + '/' + M.length + '과제 · <button class="lnk" data-a="redo">이 과제 처음부터</button> · <button class="lnk" data-a="reset">전체 초기화</button></span></div>');
 
     if (listOpen) {
@@ -597,7 +601,7 @@
     P.fin = P.fin || {}; if (complete(m)) P.fin[m.id] = true;
     P.done[m.id] = []; P.data = {}; openHints = {}; recent = null; listOpen = false; confirmOpen = false; P.exOpen = {};
     save();
-    try { LAB.prepare({ setup: m.setup, banner: '── 과제 ' + (M.indexOf(m) + 1) + '. ' + m.title + ' ── 새 실습 환경을 준비했어요 (파일·계정이 처음 상태)' }); } catch (x) { }
+    try { LAB.prepare({ setup: m.setup }); } catch (x) { }
     try { prevCwd = st().cwd || null; } catch (x) { }
     render();
     try { LAB.term.focus(); } catch (x) { }

@@ -173,10 +173,10 @@
     };
     dirs.forEach((d, i) => walk(d, i === 0));
     return code;
-  }, { help: '디렉토리 내용 보기 (-l 자세히, -a 숨김 포함, -d 디렉토리 자체, -R 하위까지, -F 종류 표시, -u 접근 시간)' });
+  }, { help: 'list directory contents' });
 
   /* ======================= 디렉토리 ======================= */
-  cmd('pwd', async (argv, io) => { io.out(io.sh.cwd + '\n'); return 0; }, { help: '현재 작업 디렉토리 출력' });
+  cmd('pwd', async (argv, io) => { io.out(io.sh.cwd + '\n'); return 0; }, { help: 'print name of current/working directory' });
   cmd('cd', async (argv, io) => {
     const sh = io.sh; const a = argv.slice(1).filter(x => x !== '-L' && x !== '-P');
     if (a.length > 1) { io.err('bash: cd: too many arguments\n'); return 1; }
@@ -188,7 +188,7 @@
     if (r.node.type !== 'd') { io.err(`bash: cd: ${t}: Not a directory\n`); return 1; }
     if (!FS.can(r.node, 'x', sh)) { io.err(`bash: cd: ${t}: Permission denied\n`); return 1; }
     sh.cwd = r.abs; return 0;
-  }, { help: '디렉토리 이동 (인자 없으면 홈, - 이전 위치, .. 상위)' });
+  }, { help: 'change the shell working directory' });
 
   cmd('mkdir', async (argv, io) => {
     const { o, a } = getopt(argv, 'm', { parents: 'p', verbose: 'v', mode: 'm' });
@@ -210,7 +210,7 @@
       catch (e) { io.err(`mkdir: cannot create directory ${lq(t)}: ${LAB.errMsg(e.code)}\n`); code = 1; }
     }
     return code;
-  }, { help: '디렉토리 만들기 (-p 중간 디렉토리까지)' });
+  }, { help: 'make directories' });
 
   cmd('rmdir', async (argv, io) => {
     const { o, a } = getopt(argv, '', { parents: 'p' });
@@ -230,7 +230,7 @@
       if (o.p) { let p = t.replace(/\/+$/, ''); while (p.includes('/')) { p = p.slice(0, p.lastIndexOf('/')); if (!p || !one(p)) break; } }
     }
     return code;
-  }, { help: '빈 디렉토리 삭제' });
+  }, { help: 'remove empty directories' });
 
   /* ======================= 파일 보기 ======================= */
   async function readArg(t, io, name) {
@@ -294,7 +294,7 @@
       } catch (e) { io.err(`cat: ${t}: ${LAB.errMsg(e.code)}\n`); code = 1; }
     }
     return code;
-  }, { help: '파일 내용 출력 (cat > 파일: 키보드로 작성, Ctrl+D 저장) -n 줄 번호' });
+  }, { help: 'concatenate files and print on the standard output' });
 
   function headTail(isTail) {
     return async (argv, io) => {
@@ -321,8 +321,8 @@
       return code;
     };
   }
-  cmd('head', headTail(false), { help: '앞부분 출력 (-n 줄 수, -c 바이트)' });
-  cmd('tail', headTail(true), { help: '뒷부분 출력 (-n 줄 수, -n +K K번째 줄부터, -f 계속 지켜보기)' });
+  cmd('head', headTail(false), { help: 'output the first part of files' });
+  cmd('tail', headTail(true), { help: 'output the last part of files' });
 
   async function pagerCmd(argv, io, kind) {
     const { a } = getopt(argv, '');
@@ -342,8 +342,8 @@
     await LAB.pager(io, text, { more: kind === 'more', title: a[0] || '' });
     return code;
   }
-  cmd('more', (argv, io) => pagerCmd(argv, io, 'more'), { help: '한 화면씩 보기 (Space 다음, q 종료)' });
-  cmd('less', (argv, io) => pagerCmd(argv, io, 'less'), { help: '앞뒤로 움직이며 보기 (Space/b, /검색, q 종료)' });
+  cmd('more', (argv, io) => pagerCmd(argv, io, 'more'), { help: 'file perusal filter for crt viewing' });
+  cmd('less', (argv, io) => pagerCmd(argv, io, 'less'), { help: 'opposite of more' });
 
   cmd('wc', async (argv, io) => {
     const { o, a } = getopt(argv, '', { lines: 'l', words: 'w', bytes: 'c', chars: 'm' });
@@ -361,7 +361,7 @@
       io.out(parts.join(' ') + (r[3] ? ' ' + r[3] : '') + '\n');
     });
     return code;
-  }, { help: '줄·단어·바이트 수 세기 (-l 줄 수)' });
+  }, { help: 'print newline, word, and byte counts for each file' });
 
   cmd('grep', async (argv, io) => {
     const { o, a } = getopt(argv, 'e', { 'ignore-case': 'i', 'line-number': 'n', 'invert-match': 'v', count: 'c', 'files-with-matches': 'l', 'word-regexp': 'w', recursive: 'r', color: 'color' });
@@ -397,7 +397,7 @@
     };
     for (const t of files) { if (t === '-') doText(io.stdin || '', '(standard input)'); else walk(t); }
     return code || (found ? 0 : 1);
-  }, { help: '패턴이 들어 있는 줄 찾기 (-i 대소문자 무시, -n 줄 번호, -v 반대)' });
+  }, { help: 'print lines that match patterns' });
 
   /* ======================= 파일 만들기·복사·이동·삭제 ======================= */
   cmd('touch', async (argv, io) => {
@@ -414,7 +414,7 @@
       try { FS.create(t, 'f', io.sh); } catch (e) { io.err(`touch: cannot touch ${q(t)}: ${LAB.errMsg(e.code)}\n`); code = 1; }
     }
     return code;
-  }, { help: '빈 파일 만들기 / 시간 갱신' });
+  }, { help: 'change file timestamps' });
 
   function canDelete(r, sh) {
     const p = r.parent; if (!FS.can(p, 'w', sh) || !FS.can(p, 'x', sh)) return false;
@@ -457,7 +457,7 @@
       if (!rmTree(r, t)) code = 1;
     }
     return code;
-  }, { help: '파일 삭제 (-r 디렉토리까지, -f 강제, -i 확인)' });
+  }, { help: 'remove files or directories' });
 
   function cloneNode(n, sh, preserve) {
     const u = LAB.users.get(sh.euser);
@@ -502,7 +502,7 @@
       if (o.v) io.out(`${q(s)} -> ${q(target)}\n`);
     }
     return code;
-  }, { help: '복사 (-r 디렉토리 복사)' });
+  }, { help: 'copy files and directories' });
 
   cmd('mv', async (argv, io) => {
     const { o, a } = getopt(argv, '', { verbose: 'v', interactive: 'i', force: 'f' });
@@ -530,7 +530,7 @@
       if (o.v) io.out(`renamed ${q(s)} -> ${q(target)}\n`);
     }
     return code;
-  }, { help: '이동 / 이름 바꾸기' });
+  }, { help: 'move (rename) files' });
 
   cmd('ln', async (argv, io) => {
     const { o, a } = getopt(argv, '', { symbolic: 's', force: 'f' });
@@ -551,7 +551,7 @@
     if (!pr.parent || !FS.can(pr.parent, 'w', sh)) { io.err(`ln: failed to create hard link ${q(name)}: Permission denied\n`); return 1; }
     tr.node.nlink = (tr.node.nlink || 1) + 1; tr.node.ctime = Date.now(); pr.parent.children[pr.name] = tr.node;
     return 0;
-  }, { help: '링크 만들기 (-s 심볼릭 링크)' });
+  }, { help: 'make links between files' });
 
   cmd('mkfifo', async (argv, io) => {
     const { o, a } = getopt(argv, 'm');
@@ -559,7 +559,7 @@
     let code = 0;
     for (const t of a) { try { FS.create(t, 'p', io.sh, o.m ? parseInt(o.m, 8) : null); } catch (e) { io.err(`mkfifo: cannot create fifo ${q(t)}: ${LAB.errMsg(e.code)}\n`); code = 1; } }
     return code;
-  }, { help: '이름 있는 파이프(FIFO) 만들기' });
+  }, { help: 'make FIFOs (named pipes)' });
 
   /* ======================= 정보 ======================= */
   function nsTime(ms, ino) {
@@ -593,7 +593,7 @@
       io.out(`${L.acc}: ${nsTime(n.atime, n.ino)}\n${L.mod}: ${nsTime(n.mtime, n.ino + 1)}\n${L.chg}: ${nsTime(n.ctime, n.ino + 2)}\n${L.birth}: ${nsTime(n.btime, n.ino + 3)}\n`);
     }
     return code;
-  }, { help: '파일 상태 (크기, inode, 권한, Access/Modify/Change/Birth 시간)' });
+  }, { help: 'display file or file system status' });
 
   cmd('file', async (argv, io) => {
     const { a } = getopt(argv, ''); let code = 0;
@@ -621,7 +621,7 @@
       io.out(`${t}: ${d}\n`);
     }
     return code;
-  }, { help: '파일 종류 확인' });
+  }, { help: 'determine file type' });
 
   /* chmod */
   function applyMode(cur, spec) {
@@ -658,7 +658,7 @@
       doNode(r.node, t);
     }
     return code;
-  }, { help: '권한 바꾸기 (755, u+x, go-w ...)' });
+  }, { help: 'change file mode bits' });
 
   cmd('chown', async (argv, io) => {
     const args = argv.slice(1).filter(x => x !== '-R'); const R = argv.includes('-R');
@@ -676,7 +676,7 @@
       doN(r.node);
     }
     return code;
-  }, { help: '소유자 바꾸기 (root만)' });
+  }, { help: 'change file owner and group' });
 
   /* ======================= 시스템 정보 ======================= */
   const KREL = '6.12.0-55.el10.x86_64', KVER = '#1 SMP PREEMPT_DYNAMIC Mon Feb 10 12:34:56 UTC 2025';
@@ -693,7 +693,7 @@
     if (o.i) parts.push('x86_64');
     if (all || o.o) parts.push('GNU/Linux');
     io.out(parts.join(' ') + '\n'); return 0;
-  }, { help: '운영체제·커널 정보 (-a 전부, -s -n -r -v -m -p -i -o)' });
+  }, { help: 'print system information' });
 
   cmd('hostname', async (argv, io) => {
     const { o, a } = getopt(argv, '', { 'all-ip-addresses': 'I', 'ip-address': 'i', fqdn: 'f', short: 's' });
@@ -702,7 +702,7 @@
     if (!a.length) { io.out(S().hostname + '\n'); return 0; }
     if (LAB.users.get(io.sh.euser).uid !== 0) { io.err('hostname: you must be root to change the host name\n'); return 1; }
     S().hostname = a[0]; return 0;
-  }, { help: '호스트 이름 보기 / 일시 변경 (sudo hostname 이름)' });
+  }, { help: 'show or set the system\'s host name' });
 
   cmd('hostnamectl', async (argv, io) => {
     const a = argv.slice(1).filter(x => !x.startsWith('-'));
@@ -726,9 +726,9 @@
       S().hostname = a[1]; S().hostnameStatic = a[1]; return 0;
     }
     io.err(`Unknown command verb '${sub}'.\n`); return 1;
-  }, { help: '호스트 정보 보기 / 영구 변경 (sudo hostnamectl set-hostname 이름)' });
+  }, { help: 'Control the system hostname' });
 
-  cmd('whoami', async (argv, io) => { io.out(io.sh.euser + '\n'); return 0; }, { help: '현재 사용자 이름' });
+  cmd('whoami', async (argv, io) => { io.out(io.sh.euser + '\n'); return 0; }, { help: 'print effective user name' });
   cmd('who', async (argv, io) => {
     const { o } = getopt(argv, '', { all: 'a', boot: 'b', 'count': 'q' });
     const boot = new Date(Date.now() - 1000 * 60 * 47); const p = n => String(n).padStart(2, '0');
@@ -740,8 +740,8 @@
     }
     io.out(`user1    seat0        ${dt(login)} (login screen)\nuser1    tty2         ${dt(login)} (tty2)\n`);
     return 0;
-  }, { help: '로그인한 사용자 목록 (-a 부팅 시간 등 전부)' });
-  cmd('tty', async (argv, io) => { if (io.stdin != null && !io.toTerm) { io.out('not a tty\n'); return 1; } io.out('/dev/' + io.tab.tty + '\n'); return 0; }, { help: '현재 터미널 장치 이름 (pts/0 = 가상 터미널)' });
+  }, { help: 'show who is logged on' });
+  cmd('tty', async (argv, io) => { if (io.stdin != null && !io.toTerm) { io.out('not a tty\n'); return 1; } io.out('/dev/' + io.tab.tty + '\n'); return 0; }, { help: 'print the file name of the terminal connected to standard input' });
   cmd('id', async (argv, io) => {
     const { o, a } = getopt(argv, '', { user: 'u', group: 'g', groups: 'G', name: 'n' });
     const name = a[0] || io.sh.euser; const u = LAB.users.get(name);
@@ -753,14 +753,14 @@
     const ctx = a[0] ? '' : (u.uid === 0 ? ' context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023' : ' context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023');
     io.out(`uid=${u.uid}(${name}) gid=${u.gid}(${gs[0]}) groups=${gs.map(g => `${S().groups[g].gid}(${g})`).join(',')}${ctx}\n`);
     return 0;
-  }, { help: '사용자 UID/GID/그룹 확인 (id 사용자)' });
+  }, { help: 'print real and effective user and group IDs' });
   cmd('groups', async (argv, io) => {
     const a = argv.slice(1);
     if (!a.length) { io.out(U.groupsOf(io.sh.euser).join(' ') + '\n'); return 0; }
     let code = 0;
     a.forEach(n => { if (!LAB.users.get(n)) { io.err(`groups: ${lq(n)}: no such user\n`); code = 1; } else io.out(`${n} : ${U.groupsOf(n).join(' ')}\n`); });
     return code;
-  }, { help: '소속 그룹' });
+  }, { help: 'print the groups a user is in' });
 
   /* date */
   function parseDateStr(s, base) {
@@ -796,7 +796,7 @@
     let out = LAB.fmtDate(d, fmt ? fmt.slice(1) : null);
     if (o.u && !fmt) out = out.replace(/ (KST|UTC|[+-]\d+) /, ' UTC ');
     io.out(out + '\n'); return 0;
-  }, { help: '날짜·시간 (+%Y-%m-%d 형식, -d "yesterday")' });
+  }, { help: 'print or set the system date and time' });
 
   cmd('seq', async (argv, io) => {
     const args = []; let sep = '\n', width = false, fmt = null;
@@ -822,7 +822,7 @@
     if (width && !fmt) { const w = Math.max(...strs.map(s => s.replace('-', '').length)); strs = strs.map(s => s.startsWith('-') ? '-' + s.slice(1).padStart(w, '0') : s.padStart(w, '0')); }
     if (strs.length) io.out(strs.join(sep) + '\n');
     return 0;
-  }, { help: '숫자 나열 (seq 5, seq 2 10, seq 1 2 10, -s 구분자, -w 자릿수 맞춤)' });
+  }, { help: 'print a sequence of numbers' });
 
   cmd('echo', async (argv, io) => {
     let a = argv.slice(1), nl = true, e = false;
@@ -830,7 +830,7 @@
     let s = a.join(' ');
     if (e) s = s.replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\\\/g, '\\');
     io.out(s + (nl ? '\n' : '')); return 0;
-  }, { help: '문자열 출력 (echo $$ 현재 셸 PID)' });
+  }, { help: 'display a line of text' });
 
   /* ======================= 사용자 관리 ======================= */
   const isRoot = io => LAB.users.get(io.sh.euser).uid === 0;
@@ -852,7 +852,7 @@
     const spool = FS.lookupAbs('/var/spool/mail');
     if (spool) { if (spool.children[name]) io.err('Creating mailbox file: File exists\n'); else { const m = FS.mkNode('f', name, 0o660, u.uid, 12); spool.children[name] = m; } }
     return 0;
-  }, { help: '사용자 추가 (sudo useradd 이름 : CentOS는 홈 디렉토리 자동 생성)' });
+  }, { help: 'create a new user or update default new user information' });
 
   async function newPassword(io, name) {
     const p1 = await io.readLine({ prompt: 'New password: ', hidden: true }); if (p1 === null) return false;
@@ -860,7 +860,7 @@
     if (p1.length < 8) io.out('BAD PASSWORD: The password is shorter than 8 characters\n');
     const p2 = await io.readLine({ prompt: 'Retype new password: ', hidden: true }); if (p2 === null) return false;
     if (p1 !== p2) { io.err('Sorry, passwords do not match.\npasswd: Authentication token manipulation error\n'); return false; }
-    LAB.users.get(name).hasPassword = true; io.out('passwd: all authentication tokens updated successfully.\n'); return true;
+    const uu = LAB.users.get(name); uu.hasPassword = true; uu.pw = p1; io.out('passwd: all authentication tokens updated successfully.\n'); return true;
   }
   cmd('passwd', async (argv, io) => {
     const { a } = getopt(argv, '');
@@ -870,12 +870,12 @@
     io.out(`Changing password for user ${name}.\n`);
     if (!isRoot(io)) {
       const cur = await io.readLine({ prompt: 'Current password: ', hidden: true }); if (cur === null) return 1;
-      if (!cur) { io.err('passwd: Authentication token manipulation error\npasswd: password unchanged\n'); return 10; }
+      if (!LAB.checkPw(name, cur)) { await LAB.sleep(900); io.err('passwd: Authentication token manipulation error\n'); return 10; }
     }
     return (await newPassword(io, name)) ? 0 : 10;
-  }, { help: '비밀번호 바꾸기 (sudo passwd 사용자)' });
+  }, { help: 'update user\'s authentication tokens' });
 
-  cmd('adduser', async (argv, io) => LAB.exec(['useradd'].concat(argv.slice(1)), io), { help: 'useradd와 같음 (CentOS에서는 useradd로 연결된 링크)' });
+  cmd('adduser', async (argv, io) => LAB.exec(['useradd'].concat(argv.slice(1)), io), { help: 'create a new user (link to useradd)' });
   cmd('_adduser_debian', async (argv, io) => {
     const { a } = getopt(argv, '');
     if (!isRoot(io)) { io.err('fatal: Only root may add a user or group to the system.\n'); return 1; }
@@ -891,7 +891,7 @@
     io.out(`info: Adding new user \`${name}' to supplemental / extra groups \`users' ...\ninfo: Adding user \`${name}' to group \`users' ...\n`);
     LAB._S().groups.users.members.push(name);
     return 0;
-  }, { help: '대화형 사용자 추가 (홈·비밀번호까지)' });
+  }, { help: 'add a user (Debian style)' });
 
   cmd('userdel', async (argv, io) => {
     const { o, a } = getopt(argv, '', { remove: 'r', force: 'f' });
@@ -909,8 +909,8 @@
     }
     LAB.users.del(name);
     return 0;
-  }, { help: '사용자 삭제 (-r 홈 디렉토리까지, -f 강제)' });
-  cmd('deluser', async (argv, io) => LAB.exec(['userdel'].concat(argv.slice(1).map(x => x === '--remove-home' ? '-r' : x)), io), { help: '사용자 삭제(userdel과 비슷)' });
+  }, { help: 'delete a user account and related files' });
+  cmd('deluser', async (argv, io) => LAB.exec(['userdel'].concat(argv.slice(1).map(x => x === '--remove-home' ? '-r' : x)), io), { help: 'remove a user (Debian style)' });
 
   /* ======================= sudo / su / exit ======================= */
   cmd('sudo', async (argv, io) => {
@@ -930,7 +930,7 @@
     if (!LAB.commands[name] && !name.includes('/')) { io.err(`sudo: ${name}: command not found\n`); return 1; }
     if (LAB.builtins.includes(name) && name !== 'echo' && name !== 'kill' && name !== 'pwd') { io.err(`sudo: ${name}: command not found\n`); return 1; }
     return LAB.withEuser(io.tab, 'root', () => LAB.exec(a, io));
-  }, { help: '관리자(root) 권한으로 실행' });
+  }, { help: 'execute a command as another user' });
 
   cmd('su', async (argv, io) => {
     const a = argv.slice(1); const login = a.includes('-') || a.includes('-l') || a.includes('--login');
@@ -940,23 +940,23 @@
     if (!isRoot(io)) {
       const pw = await io.readLine({ prompt: 'Password: ', hidden: true });
       if (pw === null) return 1;
-      if (!t.hasPassword || !pw || pw === '\u0004') { await LAB.sleep(1200); io.err('su: Authentication failure\n'); return 1; }
+      if (!LAB.checkPw(name, pw)) { await LAB.sleep(1200); io.err('su: Authentication failure\n'); return 1; }
     }
     const disp = 'su ' + (login ? '- ' : '') + name;
     LAB.pushShell(io.tab, name, login, disp);
     return 0;
-  }, { help: '다른 사용자로 전환 (su 사용자, su - 사용자: 로그인 셸)' });
+  }, { help: 'run a command with substitute user and group ID' });
 
   cmd('exit', async (argv, io) => {
     const tab = io.tab; const p = io.sh.proc;
     LAB.term.print(p.login ? 'logout\n' : 'exit\n');
     LAB.popShell(tab);
     return parseInt(argv[1] || '0', 10) || 0;
-  }, { help: '현재 셸 종료 (su로 들어온 셸이면 이전 사용자로 돌아감)' });
+  }, { help: 'exit the shell' });
   cmd('logout', async (argv, io) => {
     if (!io.sh.proc.login) { io.err("bash: logout: not login shell: use `exit'\n"); return 1; }
     LAB.term.print('logout\n'); LAB.popShell(io.tab); return 0;
-  }, { help: '로그인 셸 종료' });
+  }, { help: 'exit a login shell' });
 
   /* ======================= 프로세스 ======================= */
   const SYSPROCS = [
@@ -999,7 +999,7 @@
       list.forEach(p => io.out(`${String(p.pid).padStart(7)} ${p.tty.padEnd(8)} 00:00:00 ${p.cmdline.split(' ')[0].replace(/^.*\//, '').replace(/^-/, '').slice(0, 15)}\n`));
     }
     return list.length ? 0 : 1;
-  }, { help: '프로세스 목록 (-f 자세히, -ef 전체, -fp PID)' });
+  }, { help: 'report a snapshot of the current processes' });
 
   function treeLines(node, prefix) {
     // node: {label, kids:[]}  pstree 형식
@@ -1053,7 +1053,7 @@
       { label: lab('systemd-journal', 312), kids: [] }] };
     io.out(treeLines(root).join('\n') + '\n');
     return 0;
-  }, { help: '프로세스를 나무 모양으로 (-p PID 표시, pstree -p PID)' });
+  }, { help: 'display a tree of processes' });
 
   cmd('kill', async (argv, io) => {
     let sig = 'TERM'; const pids = [];
@@ -1084,13 +1084,13 @@
       } else if (tab && tab !== io.tab && !tab.closed) { /* 다른 탭 */ }
     }
     return code;
-  }, { help: '프로세스에 신호 보내기 (kill PID, kill -9 PID 강제 종료)' });
+  }, { help: 'send a signal to a process' });
 
   cmd('sleep', async (argv, io) => {
     const s = parseFloat(argv[1]); if (isNaN(s)) { io.err(argv[1] ? `sleep: invalid time interval ${q(argv[1])}\n` : "sleep: missing operand\nTry 'sleep --help' for more information.\n"); return 1; }
     const end = Date.now() + s * 1000; while (Date.now() < end && !io.aborted) await LAB.sleep(50);
     if (io.aborted) { LAB.term.print('^C\n'); return 130; } return 0;
-  }, { help: 'N초 기다리기' });
+  }, { help: 'delay for a specified amount of time' });
 
   /* ping */
   function lookupHost(h) {
@@ -1127,17 +1127,17 @@
     io.out(`${sent} packets transmitted, ${recv} received, ${loop ? '' : `+${Math.floor(sent / 3)} errors, `}${loss}% packet loss, time ${Math.max(0, el - 1000 + Math.floor(Math.random() * 60))}ms\n`);
     if (recv) { const mn = Math.min(...times), mx = Math.max(...times), av = times.reduce((s, x) => s + x, 0) / times.length; const md = Math.sqrt(times.reduce((s, x) => s + (x - av) ** 2, 0) / times.length); io.out(`rtt min/avg/max/mdev = ${mn.toFixed(3)}/${av.toFixed(3)}/${mx.toFixed(3)}/${md.toFixed(3)} ms\n`); }
     return recv ? 0 : 1;
-  }, { help: '네트워크 응답 확인 (Ctrl+C로 멈춤, -c 횟수)' });
+  }, { help: 'send ICMP ECHO_REQUEST to network hosts' });
 
   /* ======================= 셸 내장·기타 ======================= */
-  cmd('clear', async (argv, io) => { LAB.term.clear(); return 0; }, { help: '화면 지우기 (Ctrl+L)' });
+  cmd('clear', async (argv, io) => { LAB.term.clear(); return 0; }, { help: 'clear the terminal screen' });
   cmd('history', async (argv, io) => {
     const h = io.tab.history;
     if (argv[1] === '-c') { h.splice(0); try { localStorage.setItem('linuxlab.hist.v1', '[]'); } catch (e) { } return 0; }
     const n = argv[1] ? parseInt(argv[1], 10) : h.length;
     h.slice(-n).forEach((c, i) => io.out(`${String(h.length - Math.min(n, h.length) + i + 1).padStart(5)}  ${c}\n`));
     return 0;
-  }, { help: '입력한 명령 기록 (!! 직전 명령 다시)' });
+  }, { help: 'display the command history list' });
   cmd('type', async (argv, io) => {
     let code = 0;
     for (const n of argv.slice(1)) {
@@ -1148,7 +1148,7 @@
       else { io.err(`bash: type: ${n}: not found\n`); code = 1; }
     }
     return code;
-  }, { help: '명령 종류 (셸 내장 / 별칭 / 외부 유틸리티)' });
+  }, { help: 'display information about command type' });
   cmd('which', async (argv, io) => {
     let code = 0;
     for (const n of argv.slice(1).filter(x => !x.startsWith('-'))) {
@@ -1156,25 +1156,25 @@
       else { io.err(`/usr/bin/which: no ${n} in (/home/user1/.local/bin:/home/user1/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin)\n`); code = 1; }
     }
     return code;
-  }, { help: '명령 파일 위치' });
+  }, { help: 'shows the full path of (shell) commands' });
   cmd('alias', async (argv, io) => {
     if (argv.length === 1) { Object.keys(LAB.aliases).sort().forEach(k => io.out(`alias ${k}='${LAB.aliases[k]}'\n`)); return 0; }
     for (const x of argv.slice(1)) { const m = x.match(/^([^=]+)=(.*)$/); if (m) LAB.aliases[m[1]] = m[2]; else if (LAB.aliases[x]) io.out(`alias ${x}='${LAB.aliases[x]}'\n`); else { io.err(`bash: alias: ${x}: not found\n`); return 1; } }
     return 0;
-  }, { help: '별칭' });
-  cmd('unalias', async (argv, io) => { argv.slice(1).forEach(x => delete LAB.aliases[x]); return 0; }, { help: '별칭 지우기' });
-  cmd('true', async () => 0, { help: '항상 성공' });
-  cmd('false', async () => 1, { help: '항상 실패' });
-  cmd('umask', async (argv, io) => { io.out('0002\n'); return 0; }, { help: '기본 권한 마스크' });
-  cmd('export', async (argv, io) => { argv.slice(1).forEach(x => { const m = x.match(/^([A-Za-z_]\w*)=(.*)$/); if (m) { io.tab.vars = io.tab.vars || {}; io.tab.vars[m[1]] = m[2]; } }); return 0; }, { help: '환경 변수 설정' });
-  cmd('jobs', async (argv, io) => { if (io.tab.stopped) io.out(`[1]+  Stopped                 ${io.tab.stopped.display}\n`); return 0; }, { help: '중지된 작업' });
+  }, { help: 'define or display aliases' });
+  cmd('unalias', async (argv, io) => { argv.slice(1).forEach(x => delete LAB.aliases[x]); return 0; }, { help: 'remove alias definitions' });
+  cmd('true', async () => 0, { help: 'do nothing, successfully' });
+  cmd('false', async () => 1, { help: 'do nothing, unsuccessfully' });
+  cmd('umask', async (argv, io) => { io.out('0002\n'); return 0; }, { help: 'display or set file mode mask' });
+  cmd('export', async (argv, io) => { argv.slice(1).forEach(x => { const m = x.match(/^([A-Za-z_]\w*)=(.*)$/); if (m) { io.tab.vars = io.tab.vars || {}; io.tab.vars[m[1]] = m[2]; } }); return 0; }, { help: 'set export attribute for shell variables' });
+  cmd('jobs', async (argv, io) => { if (io.tab.stopped) io.out(`[1]+  Stopped                 ${io.tab.stopped.display}\n`); return 0; }, { help: 'display status of jobs' });
   cmd('fg', async (argv, io) => {
     const j = io.tab.stopped; if (!j) { io.err('bash: fg: current: no such job\n'); return 1; }
     io.tab.stopped = null; LAB.term.print(j.display + '\n');
     const m = j.resume.match(/^cat >> (.+)$/);
     if (m) { const buf = []; const r = await LAB.exec(['cat'], Object.assign({}, io, { stdin: null, toTerm: false, tty: false, out: s => buf.push(s), redir: { outFile: m[1], outAppend: true } })); try { FS.write(m[1], buf.join(''), { append: true }, io.sh); } catch (e) { } return r; }
     return LAB.exec(['cat'], io);
-  }, { help: '중지한 작업 다시 이어서 (Ctrl+Z 후)' });
+  }, { help: 'move job to the foreground' });
 
   cmd('find', async (argv, io) => {
     const a = argv.slice(1); const paths = []; let i = 0;
@@ -1198,13 +1198,13 @@
     };
     for (const p of paths) { const r = FS.resolve(p, {}, io.sh); if (!r.node) { io.err(`find: ${lq(p)}: No such file or directory\n`); code = 1; continue; } walk(p, r.node, 0); }
     return code;
-  }, { help: '파일 찾기 (find . -name "*.txt")' });
+  }, { help: 'search for files in a directory hierarchy' });
 
   cmd('reboot', async (argv, io) => {
     if (!isRoot(io)) { io.err('Call to Reboot failed: Interactive authentication required.\n'); return 1; }
     await LAB.sleep(300); await LAB.reboot(); return 0;
-  }, { help: '재부팅 (sudo reboot) — 일시적으로 바꾼 hostname이 원래대로' });
-  cmd('shutdown', async (argv, io) => { io.err('이 실습 터미널에서는 shutdown 대신 sudo reboot을 써 보세요.\n'); return 1; }, { help: '(실습에서는 sudo reboot 사용)' });
+  }, { help: 'reboot the machine' });
+  cmd('shutdown', async (argv, io) => { io.err('shutdown: use \'sudo reboot\' in this lab environment.\n'); return 1; }, { help: 'halt, power off or reboot the machine' });
 
   async function dnfCmd(argv, io) {
     const name = argv[0]; const sub = argv[1]; const yes = argv.includes('-y');
@@ -1228,8 +1228,8 @@
     if (sub === 'list') { io.out('Installed Packages\nbash.x86_64                     5.2.26-6.el10                @anaconda\ncoreutils.x86_64                9.5-6.el10                   @anaconda\nvim-enhanced.x86_64             2:9.1.083-5.el10             @appstream\n' + (LAB._S().installed.tree ? 'tree.x86_64                     2.1.0-8.el10                 @baseos\n' : '')); return 0; }
     io.err(`No such command: ${sub}. Please use /usr/bin/${name} --help\n`); return 1;
   }
-  cmd('dnf', dnfCmd, { help: '패키지 설치 (sudo dnf install tree) — CentOS·RHEL 계열' });
-  cmd('yum', dnfCmd, { help: 'dnf와 같음 (예전 이름)' });
+  cmd('dnf', dnfCmd, { help: 'DNF package manager' });
+  cmd('yum', dnfCmd, { help: 'redirecting to DNF' });
 
   cmd('tree', async (argv, io) => {
     if (!LAB._S().installed.tree) { io.err('bash: tree: command not found...\n'); return 127; }
@@ -1251,27 +1251,27 @@
     walk(r.node, '', 1);
     io.out(`\n${nd} director${nd === 1 ? 'y' : 'ies'}, ${nf} file${nf === 1 ? '' : 's'}\n`);
     return 0;
-  }, { help: '디렉토리 구조를 나무 모양으로 (먼저 sudo dnf install tree)' });
+  }, { help: 'list contents of directories in a tree-like format' });
 
   /* ======================= help / man ======================= */
   const GROUPS = [
-    ['시스템 정보', ['whoami', 'hostname', 'hostnamectl', 'uname', 'date', 'who', 'tty', 'id', 'groups']],
-    ['디렉토리', ['pwd', 'cd', 'ls', 'mkdir', 'rmdir', 'tree', 'find']],
-    ['파일', ['touch', 'cat', 'head', 'tail', 'more', 'less', 'wc', 'grep', 'seq', 'echo', 'cp', 'mv', 'rm', 'ln', 'mkfifo', 'stat', 'file']],
-    ['권한·사용자', ['chmod', 'chown', 'sudo', 'su', 'useradd', 'adduser', 'userdel', 'passwd']],
-    ['프로세스·셸', ['ps', 'pstree', 'kill', 'exit', 'logout', 'history', 'type', 'which', 'clear', 'sleep', 'jobs', 'fg']],
-    ['편집기·기타', ['vim', 'vi', 'man', 'ping', 'dnf', 'reboot']],
+    ['System info', ['whoami', 'hostname', 'hostnamectl', 'uname', 'date', 'who', 'tty', 'id', 'groups']],
+    ['Directories', ['pwd', 'cd', 'ls', 'mkdir', 'rmdir', 'tree', 'find']],
+    ['Files', ['touch', 'cat', 'head', 'tail', 'more', 'less', 'wc', 'grep', 'seq', 'echo', 'cp', 'mv', 'rm', 'ln', 'mkfifo', 'stat', 'file']],
+    ['Permissions & users', ['chmod', 'chown', 'sudo', 'su', 'useradd', 'adduser', 'userdel', 'passwd']],
+    ['Processes & shell', ['ps', 'pstree', 'kill', 'exit', 'logout', 'history', 'type', 'which', 'clear', 'sleep', 'jobs', 'fg']],
+    ['Editor & misc', ['vim', 'vi', 'man', 'ping', 'dnf', 'reboot']],
   ];
   cmd('help', async (argv, io) => {
     if (argv[1]) return LAB.exec(['man', argv[1]], io);
-    io.out('GNU bash, version 5.2.26(1)-release (x86_64-redhat-linux-gnu) — 실습 터미널에서 쓸 수 있는 명령\n\n');
+    io.out('GNU bash, version 5.2.26(1)-release (x86_64-redhat-linux-gnu)\nCommands available in this terminal:\n\n');
     for (const [g, list] of GROUPS) {
       io.outHTML(`<span class="c-head">[${esc(g)}]</span>\n`, `[${g}]\n`);
       list.forEach(c => { const m = LAB.meta[c] || {}; io.outHTML(`  <span class="c-exe">${esc(c.padEnd(12))}</span>${esc(m.help || '')}\n`, `  ${c.padEnd(12)}${m.help || ''}\n`); });
     }
-    io.out('\n자세한 설명: man 명령어  ·  키: Tab 자동 완성, ↑ 이전 명령, Ctrl+C 중단, Ctrl+L 화면 지우기, Ctrl+Shift+T 새 탭\n');
+    io.out('\nUse `man name\' for more information about a command.\n');
     return 0;
-  }, { help: '명령 목록' });
+  }, { help: 'display information about builtin commands' });
 
   const MAN = window.LAB_MAN || {};
   cmd('man', async (argv, io) => {
@@ -1287,6 +1287,6 @@
     if (!io.toTerm) { io.out(text); return 0; }
     await LAB.pager(io, text, { man: true, title: `Manual page ${name}(${sec}) line 1 (press h for help or q to quit)` });
     return 0;
-  }, { help: '명령 설명서 보기 (q로 나가기)' });
+  }, { help: 'an interface to the system reference manuals' });
 
 })(window.LAB);
