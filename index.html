@@ -46,7 +46,7 @@ body { background: var(--lab-bg); color: var(--lab-fg); font-family: var(--font-
 kbd { font-family: var(--font-mono); font-size: 12px; background: var(--lab-raise); border: 1px solid var(--lab-line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; color: var(--lab-fg); }
 
 .lab { flex: 1 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 400px); gap: 16px; padding-block: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); min-height: 0; }
-.missions { background: var(--lab-panel); border: 1px solid var(--lab-line); border-radius: 12px; padding: 14px; overflow: auto; max-height: calc(100vh - 120px); position: sticky; top: env(safe-area-inset-top, 0px); }
+.missions { background: var(--lab-panel); border: 1px solid var(--lab-line); border-radius: 12px; overflow: hidden; height: min(calc(100vh - 120px), 900px); min-height: 420px; position: sticky; top: env(safe-area-inset-top, 0px); }
 
 /* ---- GNOME Terminal 창 ---- */
 .termwin { display: flex; flex-direction: column; min-width: 0; height: min(calc(100vh - 120px), 900px); min-height: 420px; border-radius: 12px; overflow: hidden; background: var(--term-bg); border: 1px solid #000; box-shadow: 0 0 0 1px rgba(255,255,255,.06); position: relative; }
@@ -105,7 +105,7 @@ kbd { font-family: var(--font-mono); font-size: 12px; background: var(--lab-rais
 
 @media (max-width: 900px) {
   .lab { grid-template-columns: minmax(0, 1fr); }
-  .missions { position: static; max-height: none; }
+  .missions { position: static; height: auto; min-height: 0; overflow: visible; }
   .termwin { height: 62vh; min-height: 360px; }
   .tw-title { max-width: 46vw; font-size: 13px; }
   .tw-dot { display: none; }
@@ -3771,7 +3771,7 @@ window.LAB_MAN = (function () {
         try { passed = !!s.chk(e); } catch (x) { passed = false; }
         if (passed) {
           doneSet(m).push(i);
-          justDone = { m: m.id, i: i };
+          recent = { m: m.id, i: i, fresh: true };
           save();
           render();
           if (complete(m)) { P.fin = P.fin || {}; P.fin[m.id] = true; save(); }
@@ -3780,61 +3780,101 @@ window.LAB_MAN = (function () {
     }
     if (kind === 'command') prevCwd = e && e.cwd;
   }
-  var justDone = null;
 
   function skip(m, i) { if (!isDone(m, i)) { doneSet(m).push(i); save(); render(); } }
 
   /* ---------- 화면 ---------- */
-  var root, confirmOpen = false, listOpen = false, openHints = {};
+  var root, confirmOpen = false, listOpen = false, openHints = {}, recent = null;
 
   function css() {
     var s = document.createElement('style');
     s.textContent = [
-      '#missions{--m-bg:var(--lab-panel,#26232b);--m-fg:var(--lab-fg,#ece8f0);--m-mut:var(--lab-muted,#a49cae);--m-acc:var(--lab-accent,#e95420);--m-ok:var(--lab-ok,#4cc38a);--m-line:var(--lab-line,#3a3540);color:var(--m-fg);font-size:14px;line-height:1.55;display:flex;flex-direction:column;gap:12px;min-width:0}',
+      '#missions{--m-bg:var(--lab-panel,#26232b);--m-fg:var(--lab-fg,#ece8f0);--m-mut:var(--lab-muted,#a49cae);--m-acc:var(--lab-accent,#a974e8);--m-ok:var(--lab-ok,#4cc38a);--m-line:var(--lab-line,#3a3540);color:var(--m-fg);font-size:14px;line-height:1.5;display:flex;flex-direction:column;gap:12px;min-width:0;position:relative;overflow:hidden;padding:12px}',
       '#missions *{box-sizing:border-box}',
-      '#missions .mh{display:flex;align-items:center;justify-content:space-between;gap:8px}',
-      '#missions .mh h2{margin:0;font-size:16px;font-weight:700;letter-spacing:.2px}',
-      '#missions .bar{height:6px;border-radius:3px;background:var(--m-line);overflow:hidden}',
-      '#missions .bar i{display:block;height:100%;background:var(--m-acc);transition:width .3s}',
-      '#missions .meta{color:var(--m-mut);font-size:12px;font-variant-numeric:tabular-nums}',
-      '#missions .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}',
-      '#missions .chip{all:unset;cursor:pointer;display:flex;gap:6px;align-items:center;padding:6px 8px;border:1px solid var(--m-line);border-radius:6px;font-size:12.5px;min-width:0}',
-      '#missions .chip .n{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;background:var(--m-line)}',
-      '#missions .chip .tt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '#missions .chip .c{flex:none;color:var(--m-mut);font-size:11px;font-variant-numeric:tabular-nums}',
-      '#missions .chip.on{border-color:var(--m-acc)} #missions .chip.on .n{background:var(--m-acc);color:#fff}',
-      '#missions .chip.fin .n{background:var(--m-ok);color:#10261b}',
-      '#missions .chip:focus-visible,#missions button:focus-visible{outline:2px solid var(--m-acc);outline-offset:2px}',
-      '#missions .toggle{display:none}',
-      '#missions .card{border:1px solid var(--m-line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px;background:color-mix(in srgb,var(--m-bg) 92%,#fff 8%)}',
-      '#missions .ct{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap}',
-      '#missions .ct h3{margin:0;font-size:15.5px;flex:1;min-width:0;text-wrap:balance}',
-      '#missions .badge{font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;border:1px solid var(--m-acc);color:var(--m-acc);white-space:nowrap}',
-      '#missions .badge.ch{border-color:var(--m-line);color:var(--m-mut)}',
-      '#missions .intro{margin:0;color:var(--m-mut);font-size:13px}',
-      '#missions ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}',
-      '#missions li{display:grid;grid-template-columns:22px 1fr;gap:8px;padding:8px;border-radius:6px;border:1px solid transparent}',
-      '#missions li .ic{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--m-line);display:grid;place-items:center;font-size:11px;margin-top:1px}',
-      '#missions li.cur{border-color:var(--m-acc);background:color-mix(in srgb,var(--m-acc) 9%,transparent)}',
-      '#missions li.cur .ic{border-color:var(--m-acc);color:var(--m-acc)}',
-      '#missions li.ok .ic{background:var(--m-ok);border-color:var(--m-ok);color:#10261b;font-weight:700}',
-      '#missions li.ok .tx{color:var(--m-mut)}',
-      '#missions li.pend{opacity:.62}',
-      '#missions li.flash{animation:mflash .9s ease-out}',
-      '@keyframes mflash{0%{background:color-mix(in srgb,var(--m-ok) 35%,transparent)}100%{background:transparent}}',
-      '@media (prefers-reduced-motion:reduce){#missions li.flash{animation:none}#missions .bar i{transition:none}}',
-      '#missions .tx{min-width:0}',
-      '#missions .opt{font-size:11px;color:var(--m-mut);margin-left:4px}',
-      '#missions .ex{margin-top:4px;font-size:12.5px;color:var(--m-fg);opacity:.85;border-left:2px solid var(--m-ok);padding-left:8px}',
-      '#missions .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center}',
-      '#missions button{font:inherit;font-size:12px;cursor:pointer;border-radius:5px;padding:3px 9px;border:1px solid var(--m-line);background:transparent;color:var(--m-fg)}',
-      '#missions button:hover{border-color:var(--m-mut)}',
-      '#missions button.pri{background:var(--m-acc);border-color:var(--m-acc);color:#fff}',
-      '#missions code{font-family:var(--lab-mono,"Ubuntu Mono",ui-monospace,monospace);font-size:13.5px;background:#00000040;border:1px solid var(--m-line);padding:1px 6px;border-radius:4px;word-break:break-all}',
-      '#missions .nav{display:flex;gap:6px;justify-content:space-between;flex-wrap:wrap}',
-      '#missions .done{padding:10px;border-radius:6px;background:color-mix(in srgb,var(--m-ok) 14%,transparent);border:1px solid var(--m-ok);font-size:13px}',
-      '#missions .cfm{border:1px solid var(--m-acc);border-radius:6px;padding:10px;font-size:13px;display:flex;flex-direction:column;gap:8px}',
-      '@media (max-width:820px){#missions .toggle{display:inline-block}#missions .list.hide{display:none}}'
+      '#missions button{font:inherit;cursor:pointer;color:inherit}',
+      '#missions button:focus-visible{outline:2px solid var(--m-acc);outline-offset:2px}',
+      '#missions kbd{font-family:var(--lab-mono,ui-monospace,monospace);font-size:11px;padding:0 5px;border-radius:4px;border:1px solid currentColor;opacity:.75;margin-left:6px;white-space:nowrap}',
+      /* 상단: 과제 고르기 */
+      '#missions .mtop{display:grid;grid-template-columns:40px minmax(0,1fr) 40px;gap:6px;align-items:stretch;flex:none}',
+      '#missions .nb{border:1px solid var(--m-line);background:transparent;border-radius:9px;font-size:20px;line-height:1;display:grid;place-items:center}',
+      '#missions .nb:hover:not(:disabled){border-color:var(--m-mut);background:#ffffff0a}',
+      '#missions .nb:disabled{opacity:.3;cursor:default}',
+      '#missions .pick{border:1px solid var(--m-line);background:#ffffff08;border-radius:9px;padding:7px 12px;text-align:left;display:flex;align-items:center;gap:10px;min-width:0}',
+      '#missions .pick:hover{border-color:var(--m-mut)}',
+      '#missions .pick .pk{flex:1;min-width:0;display:flex;flex-direction:column}',
+      '#missions .pick .pk-n{font-size:11.5px;color:var(--m-mut)}',
+      '#missions .pick .pk-t{font-size:15.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '#missions .pick .car{color:var(--m-mut);font-size:12px;transition:transform .15s}',
+      '#missions .pick[aria-expanded="true"] .car{transform:rotate(180deg)}',
+      /* 단계 점 */
+      '#missions .dots{display:flex;gap:4px;flex:none}',
+      '#missions .dots i{flex:1;height:6px;border-radius:3px;background:var(--m-line)}',
+      '#missions .dots i.ok{background:var(--m-ok)} #missions .dots i.cur{background:var(--m-acc)} #missions .dots i.opt{opacity:.45}',
+      '#missions .intro{margin:-4px 0 0;color:var(--m-mut);font-size:12.5px;flex:none}',
+      '#missions .tag{display:inline-block;font-size:11px;font-weight:700;padding:0 7px;border-radius:999px;border:1px solid var(--m-acc);color:var(--m-acc);margin-right:6px;vertical-align:1px}',
+      /* 방금 완료 */
+      '#missions .got{flex:none;display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border-radius:9px;background:color-mix(in srgb,var(--m-ok) 13%,transparent);border:1px solid color-mix(in srgb,var(--m-ok) 45%,transparent);font-size:13px}',
+      '#missions .got b{color:var(--m-ok);white-space:nowrap}',
+      '#missions .got.pop{animation:mgot .5s ease-out}',
+      '@keyframes mgot{0%{transform:translateY(-4px);opacity:0}100%{transform:none;opacity:1}}',
+      /* 지금 할 일 */
+      '#missions .now{flex:none;border:1.5px solid var(--m-acc);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px;background:color-mix(in srgb,var(--m-acc) 8%,var(--m-bg))}',
+      '#missions .now.pop{animation:mnow .45s ease-out}',
+      '@keyframes mnow{0%{transform:scale(.97);opacity:.4}100%{transform:none;opacity:1}}',
+      '#missions .now-h{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--m-mut)}',
+      '#missions .now-h b{color:var(--m-acc);font-size:12.5px}',
+      '#missions .now-t{font-size:17px;font-weight:700;line-height:1.45;text-wrap:pretty}',
+      '#missions .cmd{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}',
+      '#missions .cmd code{flex:1 1 160px;min-width:0;font-family:var(--lab-mono,ui-monospace,monospace);font-size:15px;background:#0000004d;border:1px solid var(--m-line);padding:8px 11px;border-radius:8px;word-break:break-all;display:flex;align-items:center}',
+      '#missions .cmd code::before{content:"$ ";color:var(--m-mut);white-space:pre}',
+      '#missions .reveal{flex:1;border:1px dashed var(--m-mut);background:transparent;border-radius:8px;padding:9px 12px;font-size:13.5px;color:var(--m-mut);text-align:center}',
+      '#missions .reveal:hover{border-color:var(--m-fg);color:var(--m-fg)}',
+      '#missions .ins{border:0;background:var(--m-acc);color:#fff;border-radius:8px;padding:8px 14px;font-weight:700;font-size:13.5px;white-space:nowrap}',
+      '#missions .ins:hover{filter:brightness(1.1)}',
+      '#missions .sub{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--m-mut)}',
+      '#missions .lnk{border:0;background:none;padding:2px 0;font-size:12px;color:var(--m-mut);text-decoration:underline;text-underline-offset:3px}',
+      '#missions .lnk:hover{color:var(--m-fg)}',
+      /* 과제 완료 */
+      '#missions .fin{flex:none;border:1.5px solid var(--m-ok);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;background:color-mix(in srgb,var(--m-ok) 12%,var(--m-bg));animation:mnow .45s ease-out}',
+      '#missions .fin h3{margin:0;font-size:18px}',
+      '#missions .fin p{margin:0;font-size:13px;color:var(--m-mut)}',
+      '#missions .go{border:0;background:var(--m-ok);color:#0e2418;border-radius:9px;padding:11px 14px;font-weight:800;font-size:14.5px;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:8px}',
+      '#missions .go:hover{filter:brightness(1.08)}',
+      /* 단계 목록 */
+      '#missions .sl{flex:1 1 auto;min-height:60px;overflow:auto;display:flex;flex-direction:column;gap:6px;scrollbar-width:thin}',
+      '#missions .sl-h{font-size:12px;color:var(--m-mut);display:flex;justify-content:space-between}',
+      '#missions ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}',
+      '#missions li button{width:100%;border:0;background:transparent;border-radius:7px;padding:5px 8px;display:grid;grid-template-columns:20px minmax(0,1fr);gap:8px;align-items:start;text-align:left;font-size:13px}',
+      '#missions li .ic{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--m-line);display:grid;place-items:center;font-size:10.5px;margin-top:1px;color:var(--m-mut)}',
+      '#missions li .tx{color:var(--m-mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '#missions li.ok .ic{background:var(--m-ok);border-color:var(--m-ok);color:#10261b;font-weight:800}',
+      '#missions li.ok button:hover{background:#ffffff0a}',
+      '#missions li.cur button{background:color-mix(in srgb,var(--m-acc) 14%,transparent)}',
+      '#missions li.cur .ic{border-color:var(--m-acc);color:var(--m-acc)} #missions li.cur .tx{color:var(--m-fg);font-weight:700}',
+      '#missions li.pend button{cursor:default}',
+      '#missions li .opt{font-size:10.5px;margin-left:4px;opacity:.8}',
+      '#missions li .ex{grid-column:2;white-space:normal;font-size:12.5px;color:var(--m-fg);opacity:.85;border-left:2px solid var(--m-ok);padding-left:8px;margin-top:3px}',
+      /* 아래 */
+      '#missions .foot{flex:none;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--m-line);padding-top:9px;font-size:12px;color:var(--m-mut)}',
+      '#missions .foot label{display:flex;gap:6px;align-items:center;cursor:pointer}',
+      '#missions .foot input{accent-color:var(--m-acc)}',
+      '#missions .cfm{flex:none;border:1px solid var(--m-acc);border-radius:9px;padding:10px;font-size:13px;display:flex;flex-direction:column;gap:8px}',
+      '#missions .cfm .row{display:flex;gap:6px}',
+      '#missions .btn{border:1px solid var(--m-line);background:transparent;border-radius:7px;padding:5px 12px;font-size:12.5px}',
+      '#missions .btn.pri{background:var(--m-acc);border-color:var(--m-acc);color:#fff}',
+      /* 과제 목록 펼침 */
+      '#missions .menu{position:absolute;left:12px;right:12px;top:80px;bottom:12px;z-index:5;background:var(--m-bg);border:1px solid var(--m-line);border-radius:12px;box-shadow:0 18px 40px #0009;display:flex;flex-direction:column;overflow:hidden;animation:mgot .18s ease-out}',
+      '#missions .menu-h{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--m-line);font-size:12.5px;color:var(--m-mut)}',
+      '#missions .menu-b{overflow:auto;padding:6px;display:flex;flex-direction:column;gap:2px}',
+      '#missions .mi{border:0;background:transparent;border-radius:8px;padding:8px 10px;display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;font-size:14px}',
+      '#missions .mi:hover{background:#ffffff0d}',
+      '#missions .mi.on{background:color-mix(in srgb,var(--m-acc) 18%,transparent)}',
+      '#missions .mi .n{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11.5px;font-weight:700;background:var(--m-line)}',
+      '#missions .mi.on .n{background:var(--m-acc);color:#fff} #missions .mi.fin .n{background:var(--m-ok);color:#10261b}',
+      '#missions .mi .c{font-size:11.5px;color:var(--m-mut);font-variant-numeric:tabular-nums}',
+      '#missions .mi .ch{font-size:11px;color:var(--m-mut);margin-left:6px}',
+      '@media (prefers-reduced-motion:reduce){#missions .now.pop,#missions .got.pop,#missions .fin,#missions .menu{animation:none}}',
+      '@media (max-width:900px){#missions{overflow:visible}#missions .sl{overflow:visible}}'
     ].join('\n');
     document.head.appendChild(s);
   }
@@ -3844,92 +3884,134 @@ window.LAB_MAN = (function () {
     M.forEach(function (m) { all += reqCount(m); d += reqDone(m); if (complete(m) || (P.fin && P.fin[m.id])) fin++; });
     return { all: all, d: d, fin: fin };
   }
+  function isFin(m) { return complete(m) || !!(P.fin && P.fin[m.id]); }
+  function canInsert(s, hint) { return (s.on || 'command') === 'command' && hint && !/→/.test(hint) && !/처음PID/.test(hint); }
+  var lastKey = '';
 
   function render() {
     if (!root) return;
-    var m = byId(P.active), cur = curIndex(m), T = totals();
+    var m = byId(P.active), cur = curIndex(m), T = totals(), idx = M.indexOf(m);
     var h = [];
-    h.push('<div class="mh"><h2>실습 과제</h2><button class="toggle" data-a="list">' + (listOpen ? '목록 접기' : '과제 목록') + '</button></div>');
-    h.push('<div class="bar" aria-hidden="true"><i style="width:' + Math.round(T.d / T.all * 100) + '%"></i></div>');
-    h.push('<div class="meta">완료한 과제 ' + T.fin + ' / ' + M.length + ' · 단계 ' + T.d + ' / ' + T.all + ' · ⭐ = 중간고사 공개 문제 관련</div>');
-    h.push('<div class="list' + (listOpen ? '' : ' hide') + '" role="list">');
-    M.forEach(function (x, k) {
-      var cls = 'chip' + (x.id === m.id ? ' on' : '') + (complete(x) || (P.fin && P.fin[x.id]) ? ' fin' : '');
-      h.push('<button class="' + cls + '" data-a="go" data-id="' + x.id + '" role="listitem" title="' + esc(x.title) + '">' +
-        '<span class="n">' + (complete(x) ? '✓' : (k + 1)) + '</span><span class="tt">' + (x.star ? '⭐ ' : '') + esc(x.title) + '</span>' +
-        '<span class="c">' + reqDone(x) + '/' + reqCount(x) + '</span></button>');
-    });
+    var req = reqCount(m), rd = reqDone(m);
+
+    h.push('<div class="mtop">');
+    h.push('<button class="nb" data-a="prev" aria-label="이전 과제"' + (idx === 0 ? ' disabled' : '') + '>‹</button>');
+    h.push('<button class="pick" data-a="list" aria-haspopup="true" aria-expanded="' + listOpen + '"><span class="pk"><span class="pk-n">과제 ' + (idx + 1) + ' / ' + M.length + ' · ' + m.ch + ' · 완료 ' + rd + '/' + req + '</span>' +
+      '<span class="pk-t">' + (m.star ? '⭐ ' : '') + esc(m.title) + '</span></span><span class="car">▼</span></button>');
+    h.push('<button class="nb" data-a="next" aria-label="다음 과제"' + (idx === M.length - 1 ? ' disabled' : '') + '>›</button>');
     h.push('</div>');
 
-    h.push('<section class="card" aria-live="polite">');
-    h.push('<div class="ct"><h3>' + (M.indexOf(m) + 1) + '. ' + esc(m.title) + '</h3><span class="badge ch">' + m.ch + '</span>' + (m.star ? '<span class="badge">⭐ 시험</span>' : '') + '</div>');
-    h.push('<p class="intro">' + esc(m.intro) + '</p>');
-    h.push('<ol>');
-    m.steps.forEach(function (s, i) {
-      var ok_ = isDone(m, i), isCur = i === cur;
-      var cls = ok_ ? 'ok' : (isCur ? 'cur' : 'pend');
-      if (justDone && justDone.m === m.id && justDone.i === i) cls += ' flash';
-      var hk = m.id + ':' + i, hint = hintText(s);
-      h.push('<li class="' + cls + '"><span class="ic">' + (ok_ ? '✓' : (i + 1)) + '</span><div class="tx">' + esc(s.t) + (s.opt ? '<span class="opt">선택</span>' : ''));
-      if (ok_) {
-        h.push('<div class="ex">' + esc(s.ex) + '</div>');
-      } else if (isCur) {
-        h.push('<div class="row">');
-        if (openHints[hk]) {
-          h.push('<code>' + esc(hint) + '</code>');
-          if ((s.on || 'command') === 'command' && !/[→;]/.test(hint)) h.push('<button class="pri" data-a="ins" data-h="' + esc(hint) + '">입력하기</button>');
-        } else {
-          h.push('<button data-a="hint" data-k="' + hk + '">힌트</button>');
-        }
-        if (s.opt) h.push('<button data-a="skip" data-i="' + i + '">건너뛰기</button>');
-        h.push('</div>');
-      }
-      h.push('</div></li>');
-    });
-    h.push('</ol>');
-    if (complete(m)) h.push('<div class="done">이 과제를 끝냈어요. 다음 과제로 넘어가세요.</div>');
-    h.push('</section>');
+    h.push('<div class="dots" aria-hidden="true">');
+    m.steps.forEach(function (s, i) { h.push('<i class="' + (isDone(m, i) ? 'ok' : (i === cur ? 'cur' : '')) + (s.opt ? ' opt' : '') + '"></i>'); });
+    h.push('</div>');
+    h.push('<p class="intro">' + (m.star ? '<span class="tag">⭐ 시험</span>' : '') + esc(m.intro) + '</p>');
 
-    var idx = M.indexOf(m);
-    h.push('<div class="nav"><span class="row">' +
-      '<button data-a="prev"' + (idx === 0 ? ' disabled' : '') + '>← 이전</button>' +
-      '<button data-a="next"' + (idx === M.length - 1 ? ' disabled' : '') + (complete(m) ? ' class="pri"' : '') + '>다음 →</button></span>' +
-      '<span class="row"><button data-a="redo">이 과제 다시</button><button data-a="reset">전체 초기화</button></span></div>');
+    // 방금 완료한 단계 해설
+    if (recent && recent.m === m.id && m.steps[recent.i]) {
+      h.push('<div class="got' + (recent.fresh ? ' pop' : '') + '" role="status"><b>✓ ' + (recent.i + 1) + '단계</b><span>' + esc(m.steps[recent.i].ex) + '</span></div>');
+      recent.fresh = false;
+    }
+
+    var key = m.id + ':' + cur;
+    if (cur >= 0 && !(complete(m) && m.steps[cur].opt && P.skipOpt)) {
+      var s = m.steps[cur], hint = hintText(s), shown = P.showAll || openHints[key];
+      h.push('<section class="now' + (key !== lastKey ? ' pop' : '') + '" aria-live="polite">');
+      h.push('<div class="now-h"><span><b>지금 할 일</b> · ' + (cur + 1) + '단계' + (s.opt ? ' (선택)' : '') + '</span>' + (s.on === 'vim' ? '<span>vim 안에서</span>' : '') + '</div>');
+      h.push('<div class="now-t">' + esc(s.t) + '</div>');
+      h.push('<div class="cmd">');
+      if (shown) {
+        h.push('<code>' + esc(hint) + '</code>');
+        if (canInsert(s, hint)) h.push('<button class="ins" data-a="ins" data-h="' + esc(hint) + '">입력하기<kbd>Alt+H</kbd></button>');
+      } else {
+        h.push('<button class="reveal" data-a="hint" data-k="' + key + '">💡 명령어 보기<kbd>Alt+H</kbd></button>');
+      }
+      h.push('</div>');
+      h.push('<div class="sub"><span>터미널에 직접 쳐 보고 Enter ⏎ 하면 자동으로 다음 단계로 넘어가요.</span>' + (s.opt ? '<button class="lnk" data-a="skip" data-i="' + cur + '">건너뛰기</button>' : '') + '</div>');
+      h.push('</section>');
+    }
+    lastKey = key;
+
+    if (complete(m)) {
+      var nx = M[idx + 1];
+      h.push('<section class="fin" role="status"><h3>🎉 ' + (idx + 1) + '번 과제 완료!</h3>');
+      if (nx) h.push('<p>다음 과제를 누르면 깨끗한 새 터미널에서 시작해요.</p><button class="go" data-a="next"><span>다음: ' + (idx + 2) + '. ' + (nx.star ? '⭐ ' : '') + esc(nx.title) + '</span><span>→<kbd>Alt+N</kbd></span></button>');
+      else h.push('<p>모든 과제를 끝냈어요. 수고했어요!</p>');
+      h.push('</section>');
+    }
+
+    h.push('<div class="sl"><div class="sl-h"><span>전체 단계</span><span>완료한 단계를 누르면 해설이 보여요</span></div><ol>');
+    m.steps.forEach(function (s, i) {
+      var ok_ = isDone(m, i), c = ok_ ? 'ok' : (i === cur ? 'cur' : 'pend');
+      var open = ok_ && P.exOpen && P.exOpen[m.id + ':' + i];
+      h.push('<li class="' + c + '"><button data-a="row" data-i="' + i + '"' + (ok_ ? ' aria-expanded="' + !!open + '"' : ' tabindex="-1"') + '><span class="ic">' + (ok_ ? '✓' : (i + 1)) + '</span><span class="tx">' + esc(s.t) + (s.opt ? '<span class="opt">선택</span>' : '') + '</span>' +
+        (open ? '<span class="ex">' + esc(s.ex) + '</span>' : '') + '</button></li>');
+    });
+    h.push('</ol></div>');
+
     if (confirmOpen) {
-      h.push('<div class="cfm" role="alertdialog"><div>파일·계정·진행 기록이 모두 처음 상태로 돌아가요. 초기화할까요?</div>' +
-        '<div class="row"><button class="pri" data-a="resetyes">초기화</button><button data-a="resetno">취소</button></div></div>');
+      h.push('<div class="cfm" role="alertdialog"><div>모든 과제의 진행 기록과 파일·계정이 처음 상태로 돌아가요. 초기화할까요?</div>' +
+        '<div class="row"><button class="btn pri" data-a="resetyes">초기화</button><button class="btn" data-a="resetno">취소</button></div></div>');
+    }
+    h.push('<div class="foot"><label><input type="checkbox" data-a="showall"' + (P.showAll ? ' checked' : '') + '> 명령어 항상 보이기</label>' +
+      '<span>완료 ' + T.fin + '/' + M.length + '과제 · <button class="lnk" data-a="redo">이 과제 처음부터</button> · <button class="lnk" data-a="reset">전체 초기화</button></span></div>');
+
+    if (listOpen) {
+      h.push('<div class="menu" role="dialog" aria-label="과제 목록"><div class="menu-h"><span>과제를 고르면 새 터미널로 시작해요 · ⭐ = 시험 관련</span><button class="lnk" data-a="list">닫기 (Esc)</button></div><div class="menu-b">');
+      M.forEach(function (x, k) {
+        var cls = 'mi' + (x.id === m.id ? ' on' : '') + (isFin(x) ? ' fin' : '');
+        h.push('<button class="' + cls + '" data-a="go" data-id="' + x.id + '"><span class="n">' + (isFin(x) ? '✓' : (k + 1)) + '</span>' +
+          '<span>' + (x.star ? '⭐ ' : '') + esc(x.title) + '<span class="ch">' + x.ch + '</span></span><span class="c">' + reqDone(x) + '/' + reqCount(x) + '</span></button>');
+      });
+      h.push('</div></div>');
     }
     root.innerHTML = h.join('');
-    justDone = null;
+    if (listOpen) { var on = root.querySelector('.mi.on'); if (on) { on.scrollIntoView({ block: 'nearest' }); on.focus({ preventScroll: true }); } }
+    var cr = root.querySelector('li.cur'); if (cr && !listOpen) { var sl = root.querySelector('.sl'); if (sl && sl.scrollHeight > sl.clientHeight) cr.scrollIntoView({ block: 'nearest' }); }
   }
 
+  function hintAction() {
+    var m = byId(P.active), cur = curIndex(m); if (cur < 0) return;
+    var s = m.steps[cur], key = m.id + ':' + cur, hint = hintText(s);
+    if (!(P.showAll || openHints[key])) { openHints[key] = true; render(); return; }
+    if (canInsert(s, hint)) { try { LAB.insert(hint); } catch (x) { } }
+  }
+  function goNext() { var m = byId(P.active), idx = M.indexOf(m); if (idx < M.length - 1) { P.active = M[idx + 1].id; openMission(M[idx + 1]); } }
+
   function click(ev) {
-    var b = ev.target.closest('button[data-a]');
+    var b = ev.target.closest('[data-a]');
     if (!b || !root.contains(b)) return;
     var a = b.getAttribute('data-a'), m = byId(P.active), idx = M.indexOf(m);
     if (a === 'go') { P.active = b.getAttribute('data-id'); listOpen = false; openMission(byId(P.active)); }
-    else if (a === 'list') { listOpen = !listOpen; render(); }
-    else if (a === 'hint') { openHints[b.getAttribute('data-k')] = true; render(); }
-    else if (a === 'ins') { try { LAB.insert(b.getAttribute('data-h')); LAB.term && LAB.term.focus && LAB.term.focus(); } catch (x) { } }
-    else if (a === 'skip') { skip(m, +b.getAttribute('data-i')); }
+    else if (a === 'list') { listOpen = !listOpen; render(); if (!listOpen) focusTerm(); }
+    else if (a === 'hint') { openHints[b.getAttribute('data-k')] = true; render(); focusTerm(); }
+    else if (a === 'ins') { try { LAB.insert(b.getAttribute('data-h')); } catch (x) { } focusTerm(); }
+    else if (a === 'skip') { skip(m, +b.getAttribute('data-i')); focusTerm(); }
+    else if (a === 'row') { var i = +b.getAttribute('data-i'); if (isDone(m, i)) { P.exOpen = P.exOpen || {}; var k = m.id + ':' + i; P.exOpen[k] = !P.exOpen[k]; save(); render(); } }
+    else if (a === 'showall') { P.showAll = b.checked; save(); render(); focusTerm(); }
     else if (a === 'prev' && idx > 0) { P.active = M[idx - 1].id; openMission(M[idx - 1]); }
-    else if (a === 'next' && idx < M.length - 1) { P.active = M[idx + 1].id; openMission(M[idx + 1]); }
+    else if (a === 'next') goNext();
     else if (a === 'redo') { openMission(m); }
     else if (a === 'reset') { confirmOpen = true; render(); }
     else if (a === 'resetno') { confirmOpen = false; render(); }
     else if (a === 'resetyes') {
-      confirmOpen = false; P = { done: {}, active: 'm1', data: {} }; openHints = {}; save();
-      try { LAB.resetAll(); } catch (x) { }
+      confirmOpen = false; P = { done: {}, active: 'm1', data: {} }; openHints = {}; recent = null; save();
       try { localStorage.removeItem(KEY); } catch (x) { }
-      render();
+      openMission(M[0]);
     }
+  }
+  function focusTerm() { try { LAB.term.focus(); } catch (x) { } }
+  function keys(ev) {
+    if (ev.key === 'Escape' && listOpen) { listOpen = false; render(); focusTerm(); ev.preventDefault(); return; }
+    if (!ev.altKey || ev.ctrlKey || ev.metaKey) return;
+    if (ev.code === 'KeyH') { ev.preventDefault(); ev.stopPropagation(); hintAction(); }
+    else if (ev.code === 'KeyN') { ev.preventDefault(); ev.stopPropagation(); if (complete(byId(P.active))) goNext(); }
   }
 
   // 과제를 열 때마다: 진행 단계 초기화 + 파일·계정·호스트명이 처음 상태인 새 터미널
   function openMission(m) {
     if (!m) return;
     P.fin = P.fin || {}; if (complete(m)) P.fin[m.id] = true;
-    P.done[m.id] = []; P.data = {}; openHints = {};
+    P.done[m.id] = []; P.data = {}; openHints = {}; recent = null; listOpen = false; confirmOpen = false; P.exOpen = {};
     save();
     try { LAB.prepare({ setup: m.setup, banner: '── 과제 ' + (M.indexOf(m) + 1) + '. ' + m.title + ' ── 새 실습 환경을 준비했어요 (파일·계정이 처음 상태)' }); } catch (x) { }
     try { prevCwd = st().cwd || null; } catch (x) { }
@@ -3945,6 +4027,7 @@ window.LAB_MAN = (function () {
     if (!byId(P.active) || byId(P.active).id !== P.active) P.active = 'm1';
     css();
     root.addEventListener('click', click);
+    window.addEventListener('keydown', keys, true);
     try { prevCwd = st().cwd || null; } catch (x) { }
     LAB.on('command', function (e) { handle('command', e); });
     LAB.on('vim', function (e) { handle('vim', e); });
