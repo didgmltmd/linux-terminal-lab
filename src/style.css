@@ -1,0 +1,102 @@
+/* 레이아웃: 상단 바 · 왼쪽 GNOME 터미널 창 · 오른쪽 과제 패널. 우분투 데스크톱(Yaru dark)과 기본 터미널(가지색) 그대로 — 단일 다크 테마 */
+:root {
+  color-scheme: dark;
+  --lab-bg: #1b1a1d;          /* 바탕 */
+  --lab-panel: #262428;       /* 패널 */
+  --lab-raise: #2f2c32;
+  --lab-fg: #f0edf2;
+  --lab-muted: #a8a1ad;
+  --lab-line: #3b3740;
+  --lab-accent: #e95420;      /* Ubuntu orange */
+  --lab-ok: #73d216;
+  --head: #303030;            /* GNOME headerbar */
+  --head-fg: #ffffff;
+  --term-bg: #300a24;         /* Ubuntu terminal aubergine */
+  --term-fg: #eeeeec;
+  --t-green: #8ae234; --t-blue: #729fcf; --t-cyan: #34e2e2; --t-yellow: #fce94f; --t-red: #ef2929; --t-magenta: #ad7fa8; --t-gray: #b6aab3;
+  --font-ui: 'Ubuntu', 'Noto Sans KR', system-ui, sans-serif;
+  --font-mono: 'Ubuntu Mono', 'Nanum Gothic Coding', ui-monospace, 'DejaVu Sans Mono', monospace;
+  --term-size: 16px;
+}
+[hidden] { display: none !important; }
+body { background: var(--lab-bg); color: var(--lab-fg); font-family: var(--font-ui); font-size: 14px; display: flex; flex-direction: column; min-height: 100vh; margin: 0; overflow-x: hidden; }
+* { box-sizing: border-box; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; padding-block: 14px 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); border-bottom: 1px solid var(--lab-line); }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.brand h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: .2px; }
+.brand p { margin: 2px 0 0; color: var(--lab-muted); font-size: 12.5px; }
+.logo { position: relative; width: 34px; height: 34px; border-radius: 50%; background: var(--lab-accent); flex: none; }
+.logo i { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--lab-bg); border: 2px solid var(--lab-accent); box-shadow: 0 0 0 2px #fff inset; }
+.logo i:nth-child(1) { top: 3px; left: 13px; } .logo i:nth-child(2) { bottom: 6px; left: 4px; } .logo i:nth-child(3) { bottom: 6px; right: 4px; }
+.keys { display: flex; flex-wrap: wrap; gap: 6px 14px; list-style: none; margin: 0; padding: 0; color: var(--lab-muted); font-size: 12px; }
+kbd { font-family: var(--font-mono); font-size: 12px; background: var(--lab-raise); border: 1px solid var(--lab-line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; color: var(--lab-fg); }
+
+.lab { flex: 1 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 400px); gap: 16px; padding-block: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); min-height: 0; }
+.missions { background: var(--lab-panel); border: 1px solid var(--lab-line); border-radius: 12px; padding: 14px; overflow: auto; max-height: calc(100vh - 120px); position: sticky; top: env(safe-area-inset-top, 0px); }
+
+/* ---- GNOME Terminal 창 ---- */
+.termwin { display: flex; flex-direction: column; min-width: 0; height: min(calc(100vh - 120px), 900px); min-height: 420px; border-radius: 12px; overflow: hidden; background: var(--term-bg); border: 1px solid #000; box-shadow: 0 0 0 1px rgba(255,255,255,.06); position: relative; }
+.termwin.focus { box-shadow: 0 0 0 1px rgba(255,255,255,.12); }
+.tw-head { flex: none; height: 46px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; background: var(--head); color: var(--head-fg); padding: 0 8px; border-bottom: 1px solid #1d1d1d; }
+.tw-left { display: flex; gap: 6px; }
+.tw-right { display: flex; gap: 8px; justify-content: flex-end; align-items: center; }
+.tw-title { font-weight: 700; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 52vw; }
+.tw-icon, .tw-text { all: unset; cursor: pointer; height: 32px; min-width: 32px; padding: 0 10px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: var(--head-fg); font-size: 13px; }
+.tw-icon:hover, .tw-text:hover { background: #3d3d3d; }
+.tw-icon:focus-visible, .tw-text:focus-visible { outline: 2px solid var(--lab-accent); }
+.tw-dot { width: 24px; height: 24px; border-radius: 50%; background: #454545; display: grid; place-items: center; color: #fff; }
+.tw-dot.close { background: #565656; }
+.tw-tabs { flex: none; display: flex; gap: 4px; padding: 4px 6px; background: #262626; overflow-x: auto; }
+.tw-tabs .tt { all: unset; cursor: pointer; flex: 1 1 0; min-width: 120px; display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 8px; color: #cfcfcf; font-size: 12.5px; }
+.tw-tabs .tt span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; }
+.tw-tabs .tt i { font-style: normal; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; color: #bbb; }
+.tw-tabs .tt i:hover { background: #4a4a4a; }
+.tw-tabs .tt.on { background: #3a3a3a; color: #fff; }
+
+.tw-wrap { position: relative; flex: 1; min-height: 0; }
+.tw-body { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; padding: 6px 10px 10px; background: var(--term-bg); color: var(--term-fg); font-family: var(--font-mono); font-size: var(--term-size); line-height: 1.22; cursor: text; scrollbar-color: #6b4a60 transparent; }
+.tw-body .ln { white-space: pre-wrap; word-break: break-all; min-height: 1.22em; }
+.kbd { position: absolute; left: 10px; bottom: 8px; z-index: -1; width: 2px; height: 1.2em; opacity: 0; border: 0; padding: 0; resize: none; font: inherit; color: transparent; background: transparent; caret-color: transparent; }
+.tw-wrap .cur { background: var(--term-fg); color: var(--term-bg); }
+.tw-wrap .cur.blur { background: transparent; color: inherit; outline: 1px solid var(--term-fg); outline-offset: -1px; }
+.tw-wrap .p-user { color: var(--t-green); font-weight: 700; }
+.tw-wrap .p-path { color: var(--t-blue); font-weight: 700; }
+.tw-wrap .dim { color: var(--t-gray); }
+.tw-wrap .rev { background: var(--term-fg); color: var(--term-bg); }
+.tw-wrap .c-dir { color: var(--t-blue); font-weight: 700; }
+.tw-wrap .c-exe { color: var(--t-green); font-weight: 700; }
+.tw-wrap .c-ln { color: var(--t-cyan); font-weight: 700; }
+.tw-wrap .c-pipe { color: var(--t-yellow); background: #000; }
+.tw-wrap .c-dev { color: var(--t-yellow); background: #000; font-weight: 700; }
+.tw-wrap .c-tw { color: #000; background: #4e9a06; }
+.tw-wrap .c-match { color: var(--t-red); font-weight: 700; }
+.tw-wrap .c-fn { color: var(--t-magenta); } .c-sep { color: var(--t-cyan); } .c-ln2 { color: var(--t-green); }
+.tw-wrap .c-head { color: var(--t-yellow); font-weight: 700; }
+
+.fs { position: absolute; inset: 0; background: var(--term-bg); padding: 6px 10px; overflow: hidden; z-index: 3; }
+.pager .ln b { font-weight: 700; }
+.overlay { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 24px; background: var(--term-bg); font-family: var(--font-ui); }
+.overlay p { margin: 0; font-size: 16px; }
+.overlay .sub { color: var(--t-gray); font-size: 13px; max-width: 46ch; line-height: 1.6; }
+.overlay button { all: unset; cursor: pointer; margin-top: 6px; padding: 8px 16px; border-radius: 8px; background: var(--lab-accent); color: #fff; font-weight: 700; }
+.overlay button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.overlay.boot { background: #000; }
+.spin { width: 28px; height: 28px; border: 3px solid #333; border-top-color: var(--lab-accent); border-radius: 50%; animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+.toast { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); background: #3a3a3a; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 13px; z-index: 6; }
+
+.foot { padding-block: 0 18px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); color: var(--lab-muted); font-size: 12.5px; }
+.foot p { margin: 0; max-width: 90ch; line-height: 1.6; }
+
+@media (max-width: 900px) {
+  .lab { grid-template-columns: minmax(0, 1fr); }
+  .missions { position: static; max-height: none; }
+  .termwin { height: 62vh; min-height: 360px; }
+  .tw-title { max-width: 46vw; font-size: 13px; }
+  .tw-dot { display: none; }
+  .tw-head { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .keys { display: none; }
+  :root { --term-size: 14px; }
+}

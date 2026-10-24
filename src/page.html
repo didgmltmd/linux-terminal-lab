@@ -1,0 +1,66 @@
+<title>리눅스 터미널 실습실</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&family=Ubuntu+Mono:wght@400;700&family=Nanum+Gothic+Coding:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>/*STYLE*/</style>
+
+<header class="top">
+  <div class="brand">
+    <span class="logo" aria-hidden="true"><i></i><i></i><i></i></span>
+    <div>
+      <h1>리눅스 터미널 실습실</h1>
+      <p>Ubuntu 24.04 가상 터미널 · 리눅스 3장 기본 명령어 실습</p>
+    </div>
+  </div>
+  <ul class="keys" aria-label="키보드 도움말">
+    <li><kbd>Tab</kbd> 자동 완성</li>
+    <li><kbd>↑</kbd> 이전 명령</li>
+    <li><kbd>Ctrl</kbd>+<kbd>C</kbd> 중단</li>
+    <li><kbd>Ctrl</kbd>+<kbd>L</kbd> 화면 지우기</li>
+    <li><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd> 새 탭</li>
+  </ul>
+</header>
+
+<main class="lab">
+  <section class="termwin" id="termwin" aria-label="Ubuntu 터미널">
+    <div class="tw-head">
+      <div class="tw-left">
+        <button id="btn-newtab" class="tw-icon" type="button" title="새 탭 (Ctrl+Shift+T)" aria-label="새 탭">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M7 2h2v5h5v2H9v5H7V9H2V7h5z" fill="currentColor"/></svg>
+        </button>
+      </div>
+      <div class="tw-title" id="term-title">user1@ubuntu: ~</div>
+      <div class="tw-right">
+        <button id="btn-clear" class="tw-text" type="button" title="화면 지우기 (Ctrl+L)">지우기</button>
+        <span class="tw-dot" aria-hidden="true"><svg viewBox="0 0 16 16" width="12" height="12"><path d="M3 8h10" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        <span class="tw-dot" aria-hidden="true"><svg viewBox="0 0 16 16" width="12" height="12"><rect x="3.5" y="3.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></span>
+        <span class="tw-dot close" aria-hidden="true"><svg viewBox="0 0 16 16" width="12" height="12"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6"/></svg></span>
+      </div>
+    </div>
+    <div class="tw-tabs" id="term-tabs" hidden></div>
+    <div class="tw-wrap">
+    <div class="tw-body" id="term-body">
+      <div id="term-screen"></div>
+      <div id="term-input" class="ln input"></div>
+    </div>
+      <div id="term-fs" class="fs" hidden></div>
+      <div id="term-closed" class="overlay" hidden>
+        <p>[프로세스가 종료되었어요]</p>
+        <p class="sub">마지막 셸이 끝나서 터미널 창이 닫혔어요. kill -9 로 맨 처음 bash를 끝냈거나, 처음 셸에서 exit 한 경우예요.</p>
+        <button id="btn-reopen" type="button">새 터미널 열기</button>
+      </div>
+      <div id="term-boot" class="overlay boot" hidden><div class="spin" aria-hidden="true"></div><div class="boot-msg">다시 시작하는 중…</div></div>
+      <textarea id="term-kbd" class="kbd" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="명령 입력"></textarea>
+    </div>
+    <div id="term-toast" class="toast" role="status" hidden></div>
+  </section>
+
+  <aside id="missions" class="missions" aria-label="실습 과제"></aside>
+</main>
+
+<footer class="foot">
+  <p>실습용 가상 환경이에요. 실제 컴퓨터에는 아무 영향이 없고, 만든 파일과 진행 상황은 이 브라우저에만 저장돼요. 새로 고침은 <b>재부팅</b>과 같아서 일시적으로 바꾼 hostname은 원래대로 돌아가요.</p>
+</footer>
+
+<script>/*SCRIPTS*/</script>
