@@ -57,12 +57,12 @@
   var M = [
     {
       id: 'm1', ch: '1장', title: '터미널과 친해지기',
-      intro: '프롬프트 user1@ubuntu:~$ 는 "사용자@호스트:현재위치$" 예요. 아래 명령을 하나씩 쳐 보세요.',
+      intro: '프롬프트 [user1@localhost ~]$ 는 "[사용자@호스트 현재디렉토리]$" 예요. ~ 는 홈, 끝이 $ 면 일반 사용자, # 이면 root. 아래 명령을 하나씩 쳐 보세요.',
       steps: [
         { t: '지금 로그인한 사용자 이름을 확인하세요.', hint: 'whoami', chk: function (e) { return is(e, 'whoami') && ok(e); },
           ex: 'whoami = "who am i?". 관리자(root)인지 일반 사용자인지 확인할 때 써요.' },
         { t: '이 컴퓨터의 호스트 이름을 확인하세요.', hint: 'hostname', chk: function (e) { return is(e, 'hostname') && args(e).length === 0 && ok(e); },
-          ex: '호스트 이름 = 네트워크에서 컴퓨터를 구분하는 이름 (윈도우의 "내 컴퓨터 이름").' },
+          ex: '호스트 이름 = 네트워크에서 컴퓨터를 구분하는 이름 (윈도우의 "내 컴퓨터 이름"). CentOS 설치 직후에는 localhost 예요.' },
         { t: '운영체제와 커널 정보를 모두 출력하세요.', hint: 'uname -a', chk: function (e) { return is(e, 'uname') && has(e, 'a'); },
           ex: 'uname = UNIX name. -s 커널 이름, -r 커널 버전, -m 하드웨어(x86_64), -o 운영체제 이름. -a는 전부.' },
         { t: '커널 이름만(-s), 운영체제 이름만(-o) 따로 출력해 보세요.', hint: 'uname -o', chk: function (e) { return is(e, 'uname') && (has(e, 'o') || has(e, 's') || has(e, 'r')) && !has(e, 'a'); },
@@ -154,7 +154,7 @@
           ex: 'mkdir = make directory.' },
         { t: 'aaa bbb ccc 세 개를 한 번에 만드세요.', hint: 'mkdir aaa bbb ccc', chk: function () { return ['aaa', 'bbb', 'ccc'].every(function (n) { return exists(home() + '/' + n); }); },
           ex: '인자를 여러 개 주면 하나씩 다 만들어요.' },
-        { t: '-p 없이 temp1/temp2 를 만들어 에러를 확인하세요.', hint: 'mkdir temp1/temp2', chk: function (e) { return is(e, 'mkdir') && !has(e, 'p') && !ok(e) && /No such file/.test(err(e)); },
+        { t: '-p 없이 temp1/temp2 를 만들어 에러를 확인하세요.', hint: 'mkdir temp1/temp2', chk: function (e) { return is(e, 'mkdir') && !has(e, 'p') && !ok(e) && /No such file|그런 파일이나/.test(err(e)); },
           ex: 'temp1 이 없어서 그 안에 temp2 를 만들 수 없어요.' },
         { t: '이번엔 -p 로 만드세요.', hint: 'mkdir -p temp1/temp2', chk: function () { return exists(home() + '/temp1/temp2'); },
           ex: '-p = 중간 디렉토리까지 생성.' },
@@ -162,7 +162,7 @@
           ex: '맨 앞 d = 디렉토리.' },
         { t: '빈 디렉토리 aaa 를 지우세요.', hint: 'rmdir aaa', chk: function (e) { return is(e, 'rmdir') && !exists(home() + '/aaa'); },
           ex: 'rmdir 은 비어 있는 디렉토리만 지워요.' },
-        { t: 'temp1 을 rmdir 로 지워 보고 에러를 확인하세요.', hint: 'rmdir temp1', chk: function (e) { return is(e, 'rmdir') && !ok(e) && /not empty/i.test(err(e)); },
+        { t: 'temp1 을 rmdir 로 지워 보고 에러를 확인하세요.', hint: 'rmdir temp1', chk: function (e) { return is(e, 'rmdir') && !ok(e) && /not empty|비어있지 않음/i.test(err(e)); },
           ex: 'temp1 안에 temp2 가 있어서 "Directory not empty". 안까지 지우려면 rm -r 을 써요.' }
       ]
     },
@@ -222,7 +222,7 @@
           ex: '맨 앞이 p = 파이프 파일.' },
         { t: '빈 파일 memo.txt 를 만드세요.', hint: 'touch memo.txt', chk: function () { return exists(home() + '/memo.txt'); },
           ex: 'touch = 없으면 빈 파일 생성, 있으면 시간만 갱신.' },
-        { t: 'memo.txt 의 상세 정보를 보세요.', hint: 'stat memo.txt', chk: function (e) { return is(e, 'stat') && /Birth/.test(out(e)); },
+        { t: 'memo.txt 의 상세 정보를 보세요.', hint: 'stat memo.txt', chk: function (e) { return is(e, 'stat') && /Birth|생성/.test(out(e)); },
           ex: 'Access 마지막으로 읽은 시간 · Modify 내용 수정 · Change 정보(권한·소유자 등) 변경 · Birth 생성 시간.' },
         { t: '파일을 읽은 뒤(cat) 다시 stat 하세요. Access 를 보세요.', hint: 'cat memo.txt', chk: function (e) { return is(e, 'stat') && /memo\.txt/.test(line(e)) && (P.data.m8cat === true); },
           ex: '읽기만 하면 Access 만 바뀌어요.', pre: function (e) { if (is(e, 'cat') && /memo\.txt/.test(line(e)) && line(e).indexOf('>') < 0) P.data.m8cat = true; } },
@@ -236,13 +236,13 @@
       id: 'm9', ch: '3장', title: '권한과 sudo',
       intro: '노트 문제: cat etc/sudoers 와 cat /etc/sudoers 는 어떻게 다를까?',
       steps: [
-        { t: '그냥 sudo 설정 파일을 읽어 보세요.', hint: 'cat /etc/sudoers', chk: function (e) { return is(e, 'cat') && !isSudo(e) && /Permission denied/.test(err(e)); },
+        { t: '그냥 sudo 설정 파일을 읽어 보세요.', hint: 'cat /etc/sudoers', chk: function (e) { return is(e, 'cat') && !isSudo(e) && /Permission denied|허가 거부/.test(err(e)); },
           ex: '/etc/sudoers 는 root 만 읽을 수 있어요 (-r--r----- root root).' },
         { t: '관리자 권한으로 읽어 보세요.', hint: 'sudo cat /etc/sudoers', chk: function (e) { return is(e, 'cat') && isSudo(e) && ok(e); },
           ex: 'sudo = 이 명령 한 번만 root 권한으로. "%sudo ALL=(ALL:ALL) ALL" 줄 덕분에 user1 이 sudo 를 쓸 수 있어요.' },
         { t: 'sudo 로 실행하면 누구로 실행되는지 보세요.', hint: 'sudo whoami', chk: function (e) { return is(e, 'whoami') && isSudo(e) && /root/.test(out(e)); },
           ex: 'sudo 붙인 명령은 root 로 실행돼요.' },
-        { t: '홈에서 / 없이 etc/sudoers 를 읽어 보세요.', hint: 'cat etc/sudoers', chk: function (e) { return is(e, 'cat') && args(e).some(function (a) { return /^etc\/sudoers/.test(a); }) && /No such file/.test(err(e)); },
+        { t: '홈에서 / 없이 etc/sudoers 를 읽어 보세요.', hint: 'cat etc/sudoers', chk: function (e) { return is(e, 'cat') && args(e).some(function (a) { return /^etc\/sudoers/.test(a); }) && /No such file|그런 파일이나/.test(err(e)); },
           ex: '/ 가 없으면 상대경로 → "현재 디렉토리 아래 etc/sudoers" 를 찾아요. 홈엔 etc 가 없으니 No such file or directory.' },
         { t: '~/test2.sh 에 실행 권한을 주세요 (rwxr-xr-x).', hint: 'chmod 755 ~/test2.sh', chk: function () { var n = node(home() + '/test2.sh'); return !!n && (n.mode & 511) === 493; },
           ex: '7=rwx(4+2+1), 5=r-x(4+1). 소유자 · 그룹 · 기타 순서.' },
@@ -254,12 +254,12 @@
       id: 'm10', ch: '3장', title: '사용자 계정 관리', star: true,
       intro: '공개 예상문제 ② 계정 관리 명령어 + 노트 "rm -rf /home/jung 과 userdel -rf jung 의 차이".',
       steps: [
-        { t: 'jung 계정을 홈 디렉토리와 함께 만드세요.', hint: 'sudo useradd -m jung', chk: function () { return !!users().jung; },
-          ex: 'useradd 는 관리자만. -m = 홈 디렉토리(/home/jung) 생성.' },
+        { t: 'jung 계정을 만드세요.', hint: 'sudo useradd jung', chk: function () { return !!users().jung; },
+          ex: 'useradd 는 관리자만. CentOS 는 -m 을 안 붙여도 홈 디렉토리(/home/jung)를 자동으로 만들어요. (우분투는 -m 이 필요해요)' },
         { t: 'jung 계정 정보를 확인하세요.', hint: 'id jung', chk: function (e) { return is(e, 'id') && /uid=/.test(out(e)) && /jung/.test(line(e)); },
           ex: 'uid(사용자 번호) · gid(기본 그룹) · groups(소속 그룹).' },
-        { t: '/home 아래를 보세요.', hint: 'ls /home', chk: function (e) { return is(e, 'ls') && /jung/.test(out(e)); },
-          ex: '사용자마다 홈 디렉토리가 하나씩 있어요.' },
+        { t: '/home 아래를 자세히 보세요.', hint: 'ls -l /home', chk: function (e) { return is(e, 'ls') && /jung/.test(out(e)); },
+          ex: '사용자마다 홈 디렉토리가 하나씩 있어요. CentOS 홈 권한은 drwx------ (본인만 접근). 권한 뒤의 점(.)은 SELinux 표시예요.' },
         { t: 'jung 의 비밀번호를 정하세요.', hint: 'sudo passwd jung', chk: function () { var u = users().jung; return !!u && !!u.hasPassword; },
           ex: '화면에 안 보여도 입력되고 있어요. 두 번 똑같이 입력해요.' },
         { t: '홈 디렉토리만 지워 보세요.', hint: 'sudo rm -rf /home/jung', chk: function () { return !exists('/home/jung') && !!users().jung; },
@@ -268,15 +268,15 @@
           ex: '디렉토리는 사라졌지만 계정은 남아 있어요 → 로그인은 가능.' },
         { t: '이번엔 계정 자체를 지우세요.', hint: 'sudo userdel -rf jung', chk: function () { return !users().jung; },
           ex: 'userdel 계정 삭제, -r 홈·메일 스풀도 삭제, -f 강제. 계정과 디렉토리가 완전히 사라져요.' },
-        { t: '다시 확인하세요.', hint: 'id jung', chk: function (e) { return is(e, 'id') && /no such user/i.test(err(e)); },
-          ex: '"no such user" = 계정이 완전히 사라짐.' }
+        { t: '다시 확인하세요.', hint: 'id jung', chk: function (e) { return is(e, 'id') && /no such user|그런 사용자가 없습니다/i.test(err(e)); },
+          ex: '"그런 사용자가 없습니다(no such user)" = 계정이 완전히 사라짐.' }
       ]
     },
     {
       id: 'm11', ch: '3장', title: '프로세스·su·exit', star: true,
       intro: '노트 "kill 대신 exit 을 써야 하는 이유". su 할 때마다 자식 bash 가 하나씩 생겨요.',
       steps: [
-        { t: 'jung 계정을 만드세요 (이미 있으면 통과).', hint: 'sudo useradd -m jung', chk: function () { return !!users().jung && exists('/home/jung'); },
+        { t: 'jung 계정을 만드세요.', hint: 'sudo useradd jung', chk: function () { return !!users().jung && exists('/home/jung'); },
           ex: '홈이 없다고 나오면 sudo userdel -rf jung 후 다시 만드세요.' },
         { t: 'jung 의 비밀번호를 정하세요.', hint: 'sudo passwd jung', chk: function () { var u = users().jung; return !!u && !!u.hasPassword; },
           ex: 'su 로 들어가려면 비밀번호가 필요해요.' },
@@ -297,7 +297,7 @@
           ex: 'exit 은 현재(자식) 셸만 끝내고 부모로 돌아가요. 중첩된 셸은 exit 으로 하나씩 순서대로 닫아요.' },
         { opt: true, t: '(선택) su jung → su user1 로 셸을 세 겹으로 만드세요.', hint: 'su jung', chk: function () { return st().user === 'user1' && bashCount() >= 3; },
           ex: 'user1 bash ─ su ─ jung bash ─ su ─ user1 bash.' },
-        { opt: true, t: '(선택) 이 상태에서 jung 계정을 지워 보세요.', hint: 'sudo userdel -rf jung', chk: function (e) { return is(e, 'userdel') && /currently used by process/.test(err(e)); },
+        { opt: true, t: '(선택) 이 상태에서 jung 계정을 지워 보세요.', hint: 'sudo userdel -rf jung', chk: function (e) { return is(e, 'userdel') && /currently used by process|프로세스가 사용 중/.test(err(e)); },
           ex: 'jung 의 bash 가 아직 살아 있어서 "currently used by process" 에러가 나요.' },
         { opt: true, t: '(선택) exit 을 두 번 쳐서 처음 셸로 돌아온 뒤 다시 지우세요.', hint: 'exit', chk: function () { return bashCount() <= 1 && !users().jung; },
           ex: 'exit 으로 자식부터 순서대로 닫으면 문제없이 지워져요. ⚠️ sudo kill -9 로 부모 bash 를 죽이면 그 아래 셸이 전부 "죽었음(Killed)" 으로 꺼지고 터미널이 닫혀요. 그래서 kill 대신 exit 을 써요.' }
@@ -358,7 +358,7 @@
           justDone = { m: m.id, i: i };
           save();
           render();
-          if (complete(m) && !P.celebrated) { }
+          if (complete(m)) { P.fin = P.fin || {}; P.fin[m.id] = true; save(); }
         }
       }
     }
@@ -425,7 +425,7 @@
 
   function totals() {
     var all = 0, d = 0, fin = 0;
-    M.forEach(function (m) { all += reqCount(m); d += reqDone(m); if (complete(m)) fin++; });
+    M.forEach(function (m) { all += reqCount(m); d += reqDone(m); if (complete(m) || (P.fin && P.fin[m.id])) fin++; });
     return { all: all, d: d, fin: fin };
   }
 
@@ -438,7 +438,7 @@
     h.push('<div class="meta">완료한 과제 ' + T.fin + ' / ' + M.length + ' · 단계 ' + T.d + ' / ' + T.all + ' · ⭐ = 중간고사 공개 문제 관련</div>');
     h.push('<div class="list' + (listOpen ? '' : ' hide') + '" role="list">');
     M.forEach(function (x, k) {
-      var cls = 'chip' + (x.id === m.id ? ' on' : '') + (complete(x) ? ' fin' : '');
+      var cls = 'chip' + (x.id === m.id ? ' on' : '') + (complete(x) || (P.fin && P.fin[x.id]) ? ' fin' : '');
       h.push('<button class="' + cls + '" data-a="go" data-id="' + x.id + '" role="listitem" title="' + esc(x.title) + '">' +
         '<span class="n">' + (complete(x) ? '✓' : (k + 1)) + '</span><span class="tt">' + (x.star ? '⭐ ' : '') + esc(x.title) + '</span>' +
         '<span class="c">' + reqDone(x) + '/' + reqCount(x) + '</span></button>');
@@ -491,14 +491,14 @@
     var b = ev.target.closest('button[data-a]');
     if (!b || !root.contains(b)) return;
     var a = b.getAttribute('data-a'), m = byId(P.active), idx = M.indexOf(m);
-    if (a === 'go') { P.active = b.getAttribute('data-id'); listOpen = false; save(); render(); }
+    if (a === 'go') { P.active = b.getAttribute('data-id'); listOpen = false; openMission(byId(P.active)); }
     else if (a === 'list') { listOpen = !listOpen; render(); }
     else if (a === 'hint') { openHints[b.getAttribute('data-k')] = true; render(); }
     else if (a === 'ins') { try { LAB.insert(b.getAttribute('data-h')); LAB.term && LAB.term.focus && LAB.term.focus(); } catch (x) { } }
     else if (a === 'skip') { skip(m, +b.getAttribute('data-i')); }
-    else if (a === 'prev' && idx > 0) { P.active = M[idx - 1].id; save(); render(); }
-    else if (a === 'next' && idx < M.length - 1) { P.active = M[idx + 1].id; save(); render(); }
-    else if (a === 'redo') { P.done[m.id] = []; if (m.id === 'm8') P.data.m8cat = false; save(); render(); }
+    else if (a === 'prev' && idx > 0) { P.active = M[idx - 1].id; openMission(M[idx - 1]); }
+    else if (a === 'next' && idx < M.length - 1) { P.active = M[idx + 1].id; openMission(M[idx + 1]); }
+    else if (a === 'redo') { openMission(m); }
     else if (a === 'reset') { confirmOpen = true; render(); }
     else if (a === 'resetno') { confirmOpen = false; render(); }
     else if (a === 'resetyes') {
@@ -508,6 +508,19 @@
       render();
     }
   }
+
+  // 과제를 열 때마다: 진행 단계 초기화 + 파일·계정·호스트명이 처음 상태인 새 터미널
+  function openMission(m) {
+    if (!m) return;
+    P.fin = P.fin || {}; if (complete(m)) P.fin[m.id] = true;
+    P.done[m.id] = []; P.data = {}; openHints = {};
+    save();
+    try { LAB.prepare({ setup: m.setup, banner: '── 과제 ' + (M.indexOf(m) + 1) + '. ' + m.title + ' ── 새 실습 환경을 준비했어요 (파일·계정이 처음 상태)' }); } catch (x) { }
+    try { prevCwd = st().cwd || null; } catch (x) { }
+    render();
+    try { LAB.term.focus(); } catch (x) { }
+  }
+  LAB.openMission = function (id) { var m = byId(id); if (m) { P.active = id; openMission(m); } };
 
   function init() {
     root = document.getElementById('missions');

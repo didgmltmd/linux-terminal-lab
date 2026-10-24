@@ -7,12 +7,12 @@
   --lab-fg: #f0edf2;
   --lab-muted: #a8a1ad;
   --lab-line: #3b3740;
-  --lab-accent: #e95420;      /* Ubuntu orange */
+  --lab-accent: #a974e8;      /* CentOS 보라 */
   --lab-ok: #73d216;
   --head: #303030;            /* GNOME headerbar */
   --head-fg: #ffffff;
-  --term-bg: #300a24;         /* Ubuntu terminal aubergine */
-  --term-fg: #eeeeec;
+  --term-bg: #1e1e1e;         /* GNOME 터미널 기본(어두운 회색) */
+  --term-fg: #e8e8e8;
   --t-green: #8ae234; --t-blue: #729fcf; --t-cyan: #34e2e2; --t-yellow: #fce94f; --t-red: #ef2929; --t-magenta: #ad7fa8; --t-gray: #b6aab3;
   --font-ui: 'Ubuntu', 'Noto Sans KR', system-ui, sans-serif;
   --font-mono: 'Ubuntu Mono', 'Nanum Gothic Coding', ui-monospace, 'DejaVu Sans Mono', monospace;
@@ -26,9 +26,12 @@ body { background: var(--lab-bg); color: var(--lab-fg); font-family: var(--font-
 .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .brand h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: .2px; }
 .brand p { margin: 2px 0 0; color: var(--lab-muted); font-size: 12.5px; }
-.logo { position: relative; width: 34px; height: 34px; border-radius: 50%; background: var(--lab-accent); flex: none; }
-.logo i { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--lab-bg); border: 2px solid var(--lab-accent); box-shadow: 0 0 0 2px #fff inset; }
-.logo i:nth-child(1) { top: 3px; left: 13px; } .logo i:nth-child(2) { bottom: 6px; left: 4px; } .logo i:nth-child(3) { bottom: 6px; right: 4px; }
+.logo { width: 34px; height: 34px; border-radius: 9px; background: var(--lab-accent); color: #fff; flex: none; display: grid; place-items: center; }
+.lang { display: flex; align-items: center; gap: 4px; background: var(--lab-raise); border: 1px solid var(--lab-line); border-radius: 8px; padding: 3px; }
+.lang-l { color: var(--lab-muted); font-size: 12px; padding: 0 6px; }
+.lang button { all: unset; cursor: pointer; font-size: 12.5px; padding: 4px 10px; border-radius: 6px; color: var(--lab-fg); }
+.lang button.on { background: var(--lab-accent); color: #fff; font-weight: 700; }
+.lang button:focus-visible { outline: 2px solid var(--lab-accent); }
 .keys { display: flex; flex-wrap: wrap; gap: 6px 14px; list-style: none; margin: 0; padding: 0; color: var(--lab-muted); font-size: 12px; }
 kbd { font-family: var(--font-mono); font-size: 12px; background: var(--lab-raise); border: 1px solid var(--lab-line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; color: var(--lab-fg); }
 
@@ -55,7 +58,7 @@ kbd { font-family: var(--font-mono); font-size: 12px; background: var(--lab-rais
 .tw-tabs .tt.on { background: #3a3a3a; color: #fff; }
 
 .tw-wrap { position: relative; flex: 1; min-height: 0; }
-.tw-body { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; padding: 6px 10px 10px; background: var(--term-bg); color: var(--term-fg); font-family: var(--font-mono); font-size: var(--term-size); line-height: 1.22; cursor: text; scrollbar-color: #6b4a60 transparent; }
+.tw-body { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; padding: 6px 10px 10px; background: var(--term-bg); color: var(--term-fg); font-family: var(--font-mono); font-size: var(--term-size); line-height: 1.22; cursor: text; scrollbar-color: #555 transparent; }
 .tw-body .ln { white-space: pre-wrap; word-break: break-all; min-height: 1.22em; }
 .kbd { position: absolute; left: 10px; bottom: 8px; z-index: -1; width: 2px; height: 1.2em; opacity: 0; border: 0; padding: 0; resize: none; font: inherit; color: transparent; background: transparent; caret-color: transparent; }
 .tw-wrap .cur { background: var(--term-fg); color: var(--term-bg); }

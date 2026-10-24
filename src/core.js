@@ -8,6 +8,74 @@
   LAB.on = (n, f) => { (listeners[n] = listeners[n] || []).push(f); };
   LAB.emit = (n, d) => { (listeners[n] || []).forEach(f => { try { f(d); } catch (e) { console.error(e); } }); };
   LAB.sleep = ms => new Promise(r => setTimeout(r, ms));
+  /* 메시지 언어 (ko = 한국어 설치 CentOS, en = 영어) */
+  LAB.lang = (function () { try { return localStorage.getItem('linuxlab.lang') || 'ko'; } catch (e) { return 'ko'; } })();
+  LAB.setLang = l => { LAB.lang = l; try { localStorage.setItem('linuxlab.lang', l); } catch (e) { } LAB.emit('lang', l); };
+  const TR = [
+    [/^ls: cannot access (.+?): /, 'ls: $1에 접근할 수 없습니다: '],
+    [/^ls: cannot open directory (.+?): /, 'ls: $1 디렉터리를 열 수 없음: '],
+    [/^mkdir: cannot create directory (.+?): /, 'mkdir: $1 디렉터리를 만들 수 없습니다: '],
+    [/^rmdir: failed to remove (.+?): /, 'rmdir: $1 제거 실패: '],
+    [/^rm: cannot remove (.+?): /, 'rm: $1을(를) 지울 수 없음: '],
+    [/^rm: remove regular empty file (.+)\? $/, 'rm: 일반 빈 파일 $1를 제거할까요? '],
+    [/^rm: remove regular file (.+)\? $/, 'rm: 일반 파일 $1를 제거할까요? '],
+    [/^cp: cannot stat (.+?): /, 'cp: $1을(를) 설명할 수 없음: '],
+    [/^cp: -r not specified; omitting directory (.+)$/, 'cp: -r 지정되지 않음, $1 디렉터리 생략'],
+    [/^mv: cannot stat (.+?): /, 'mv: $1을(를) 설명할 수 없음: '],
+    [/^touch: cannot touch (.+?): /, 'touch: $1을(를) touch할 수 없음: '],
+    [/^chmod: changing permissions of (.+?): /, 'chmod: $1의 권한을 바꾸는 중: '],
+    [/^chmod: cannot access (.+?): /, 'chmod: $1에 접근할 수 없습니다: '],
+    [/^stat: cannot statx (.+?): /, 'stat: $1을(를) statx 할 수 없음: '],
+    [/^head: cannot open (.+?) for reading: /, 'head: $1을(를) 읽기용으로 열 수 없음: '],
+    [/^tail: cannot open (.+?) for reading: /, 'tail: $1을(를) 읽기용으로 열 수 없음: '],
+    [/No such file or directory/, '그런 파일이나 디렉터리가 없습니다'],
+    [/Permission denied/, '허가 거부'],
+    [/Is a directory/, '디렉터리입니다'],
+    [/Not a directory/, '디렉터리가 아닙니다'],
+    [/File exists/, '파일이 있습니다'],
+    [/Directory not empty/, '디렉터리가 비어있지 않음'],
+    [/Operation not permitted/, '명령을 허용하지 않음'],
+    [/: command not found\.\.\.$/, ': 명령을 찾을 수 없습니다...'],
+    [/^Killed$/, '죽었음'],
+    [/^(\S+): missing operand$/, '$1: 피연산자 없음'],
+    [/^(\S+): missing file operand$/, '$1: 파일 피연산자 없음'],
+    [/^Try '(\S+) --help' for more information\.$/, "더 많은 정보를 보려면 '$1 --help'를 입력하십시오."],
+    [/^\[sudo\] password for (\S+): $/, '[sudo] $1의 암호: '],
+    [/^Sorry, try again\.$/, '죄송합니다. 다시 시도하십시오.'],
+    [/^sudo: 3 incorrect password attempts$/, 'sudo: 3번의 잘못된 암호 시도'],
+    [/^(\S+) is not in the sudoers file\.$/, '$1 은(는) sudoers 설정 파일에 없습니다.'],
+    [/^Password: $/, '암호: '],
+    [/^su: Authentication failure$/, 'su: 인증 실패'],
+    [/^New password: $/, '새 암호: '],
+    [/^Retype new password: $/, '새 암호 재입력: '],
+    [/^Current password: $/, '현재 암호: '],
+    [/^Changing password for user (\S+)\.$/, '$1 사용자의 비밀 번호 변경 중'],
+    [/^passwd: all authentication tokens updated successfully\.$/, 'passwd: 모든 인증 토큰이 성공적으로 업데이트 되었습니다.'],
+    [/^BAD PASSWORD: The password is shorter than 8 characters$/, '잘못된 암호: 암호는 8 개의 문자 보다 짧습니다'],
+    [/^Sorry, passwords do not match\.$/, '죄송합니다. 암호가 일치하지 않습니다.'],
+    [/^passwd: Authentication token manipulation error$/, 'passwd: 인증 토큰 수정 오류'],
+    [/^id: (.+?): no such user$/, 'id: $1: 그런 사용자가 없습니다'],
+    [/^userdel: user (\S+) is currently used by process (\d+)$/, 'userdel: $1 사용자는 현재 $2 프로세스가 사용 중입니다'],
+    [/^userdel: user '(\S+)' does not exist$/, "userdel: '$1' 사용자가 없습니다"],
+    [/^userdel: (\S+) mail spool \((.+)\) not found$/, 'userdel: $1 메일 스풀($2)이 없습니다'],
+    [/^userdel: (\S+) home directory \((.+)\) not found$/, 'userdel: $1 홈 디렉터리($2)가 없습니다'],
+    [/^useradd: user '(\S+)' already exists$/, "useradd: '$1' 사용자가 이미 있습니다"],
+    [/^(useradd|userdel): Permission denied\.$/, '$1: 허가 거부.'],
+    [/^(useradd|userdel): cannot lock \/etc\/passwd; try again later\.$/, '$1: /etc/passwd를 잠글 수 없습니다. 나중에 다시 시도하십시오.'],
+    [/^(\S+) is a shell builtin$/, '$1 는 쉘 내장임'],
+    [/^(\S+) is a shell keyword$/, '$1 는 쉘 키워드임'],
+    [/^(\S+) is aliased to `(.+)'$/, "$1 는 `$2' 의 별칭임"],
+    [/^(\S+) is (\/\S+)$/, '$1 는 $2 임'],
+    [/^bash: cd: too many arguments$/, 'bash: cd: 인자가 너무 많음'],
+    [/^bash: kill: \((\d+)\) - No such process$/, 'bash: kill: ($1) - 그런 프로세스가 없음'],
+    [/^hostname: you must be root to change the host name$/, 'hostname: 호스트 이름을 바꾸려면 root 이어야 합니다'],
+    [/^No manual entry for (\S+)$/, '$1에 대한 매뉴얼 항목이 없습니다'],
+    [/^Error: This command has to be run with superuser privileges \(under the root user on most systems\)\.$/, '오류: 이 명령은 슈퍼유저 권한으로 실행해야 합니다 (대부분의 시스템에서 root 사용자로).'],
+  ];
+  LAB.tr = function (text) {
+    if (LAB.lang !== 'ko' || !text) return text;
+    return String(text).split('\n').map(line => { let l = line; for (const [re, to] of TR) l = l.replace(re, to); return l; }).join('\n');
+  };
 
   /* ---------------- 상태 ---------------- */
   const STORE_KEY = 'linuxlab.fs.v1';
@@ -17,58 +85,63 @@
   function freshState() {
     const t = Date.now() - 1000 * 60 * 60 * 24 * 3;
     const st = {
-      ino: 1310000, pid: 2340, hostnameStatic: 'ubuntu', hostname: 'ubuntu',
+      ino: 1310000, pid: 2340, hostnameStatic: '', hostname: 'localhost',
       users: {
-        root: { uid: 0, gid: 0, home: '/root', shell: '/bin/bash', hasPassword: false, gecos: 'root' },
+        root: { uid: 0, gid: 0, home: '/root', shell: '/bin/bash', hasPassword: true, gecos: 'Super User' },
         user1: { uid: 1000, gid: 1000, home: HOME0, shell: '/bin/bash', hasPassword: true, gecos: 'user1' },
       },
       groups: {
-        root: { gid: 0, members: [] }, adm: { gid: 4, members: ['user1'] }, cdrom: { gid: 24, members: ['user1'] },
-        sudo: { gid: 27, members: ['user1'] }, dip: { gid: 30, members: ['user1'] }, plugdev: { gid: 46, members: ['user1'] },
-        users: { gid: 100, members: ['user1'] }, lpadmin: { gid: 114, members: ['user1'] }, user1: { gid: 1000, members: [] },
+        root: { gid: 0, members: [] }, bin: { gid: 1, members: [] }, daemon: { gid: 2, members: [] }, sys: { gid: 3, members: [] },
+        adm: { gid: 4, members: [] }, tty: { gid: 5, members: [] }, disk: { gid: 6, members: [] }, lp: { gid: 7, members: [] },
+        wheel: { gid: 10, members: ['user1'] }, mail: { gid: 12, members: [] }, users: { gid: 100, members: [] }, user1: { gid: 1000, members: [] },
       },
-      nextUid: 1001, installed: {}, mail: {},
+      nextUid: 1001, installed: {}, mail: {}, sudoLectured: {},
       root: null,
     };
     S = st;
-    st.root = mkNode('d', '', 0o755, 0, 0, t);
+    st.root = mkNode('d', '', 0o555, 0, 0, t);
     const D = (p, mode, uid, gid) => mkdirAbs(p, mode == null ? 0o755 : mode, uid || 0, gid || 0, t);
     const F = (p, content, mode, uid, gid) => mkfileAbs(p, content, mode == null ? 0o644 : mode, uid || 0, gid || 0, t);
-    ['boot', 'dev', 'dev/pts', 'etc', 'home', 'media', 'mnt', 'opt', 'proc', 'run', 'srv', 'sys', 'usr', 'usr/bin', 'usr/sbin', 'usr/lib',
-      'usr/local', 'usr/local/bin', 'usr/share', 'var', 'var/log', 'var/mail', 'var/tmp', 'snap', 'etc/skel'].forEach(p => D('/' + p));
-    D('/root', 0o700); D('/tmp', 0o1777); D('/var/tmp', 0o1777);
-    symAbs('/bin', 'usr/bin', t); symAbs('/sbin', 'usr/sbin', t); symAbs('/lib', 'usr/lib', t);
+    ['afs', 'boot', 'dev', 'dev/pts', 'etc', 'home', 'media', 'mnt', 'opt', 'proc', 'run', 'srv', 'sys', 'usr', 'usr/bin', 'usr/sbin', 'usr/lib', 'usr/lib64',
+      'usr/local', 'usr/local/bin', 'usr/share', 'var', 'var/log', 'var/spool', 'etc/skel'].forEach(p => D('/' + p));
+    D('/root', 0o550); D('/tmp', 0o1777); D('/var/tmp', 0o1777); D('/var/spool/mail', 0o775, 0, 12);
+    symAbs('/bin', 'usr/bin', t); symAbs('/sbin', 'usr/sbin', t); symAbs('/lib', 'usr/lib', t); symAbs('/lib64', 'usr/lib64', t); symAbs('/var/mail', 'spool/mail', t);
     ['null', 'zero', 'random', 'tty', 'sda', 'sda1', 'sda2', 'tty1', 'tty2', 'tty3'].forEach(n => {
       const node = mkNode(n.startsWith('sda') ? 'b' : 'c', n, n === 'null' || n === 'zero' || n === 'tty' || n === 'random' ? 0o666 : 0o660, 0, n.startsWith('tty') && n !== 'tty' ? 5 : (n.startsWith('sda') ? 6 : 0), t);
       lookupAbs('/dev').children[n] = node;
     });
-    F('/etc/hostname', 'ubuntu\n');
-    F('/etc/hosts', '127.0.0.1\tlocalhost\n127.0.1.1\tubuntu\n\n# The following lines are desirable for IPv6 capable hosts\n::1     ip6-localhost ip6-loopback\nfe00::0 ip6-localnet\nff00::0 ip6-mcastprefix\nff02::1 ip6-allnodes\nff02::2 ip6-allrouters\n');
-    F('/etc/os-release', 'PRETTY_NAME="Ubuntu 24.04.1 LTS"\nNAME="Ubuntu"\nVERSION_ID="24.04"\nVERSION="24.04.1 LTS (Noble Numbat)"\nVERSION_CODENAME=noble\nID=ubuntu\nID_LIKE=debian\nHOME_URL="https://www.ubuntu.com/"\n');
-    F('/etc/issue', 'Ubuntu 24.04.1 LTS \\n \\l\n\n');
-    F('/etc/shells', '# /etc/shells: valid login shells\n/bin/sh\n/bin/bash\n/usr/bin/bash\n/bin/dash\n');
+    F('/etc/hostname', '');
+    F('/etc/hosts', '127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4\n::1         localhost localhost.localdomain localhost6 localhost6.localdomain6\n');
+    F('/etc/os-release', 'NAME="CentOS Stream"\nVERSION="10 (Coughlan)"\nID="centos"\nID_LIKE="rhel fedora"\nVERSION_ID="10"\nPLATFORM_ID="platform:el10"\nPRETTY_NAME="CentOS Stream 10 (Coughlan)"\nANSI_COLOR="0;31"\nCPE_NAME="cpe:/o:centos:centos:10"\nHOME_URL="https://centos.org/"\n');
+    F('/etc/centos-release', 'CentOS Stream release 10 (Coughlan)\n');
+    F('/etc/redhat-release', 'CentOS Stream release 10 (Coughlan)\n');
+    F('/etc/issue', '\\S\nKernel \\r on \\m\n\n');
+    F('/etc/shells', '/bin/sh\n/bin/bash\n/usr/bin/sh\n/usr/bin/bash\n');
     F('/etc/passwd', '', 0o644).dynamic = 'passwd';
     F('/etc/group', '', 0o644).dynamic = 'group';
-    F('/etc/shadow', '', 0o640, 0, 42).dynamic = 'shadow';
-    F('/etc/sudoers', '#\n# This file MUST be edited with the \'visudo\' command as root.\n#\nDefaults\tenv_reset\nDefaults\tmail_badpass\nDefaults\tsecure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"\n\n# User privilege specification\nroot\tALL=(ALL:ALL) ALL\n\n# Members of the admin group may gain root privileges\n%admin ALL=(ALL) ALL\n\n# Allow members of group sudo to execute any command\n%sudo\tALL=(ALL:ALL) ALL\n\n@includedir /etc/sudoers.d\n', 0o440);
+    F('/etc/shadow', '', 0o000).dynamic = 'shadow';
+    F('/etc/sudoers', '## Sudoers allows particular users to run various commands as\n## the root user, without needing the root password.\n##\n## This file must be edited with the \'visudo\' command.\n\nDefaults   !visiblepw\nDefaults    always_set_home\nDefaults    match_group_by_gid\nDefaults    env_reset\nDefaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin\n\n## Allow root to run any commands anywhere\nroot\tALL=(ALL) \tALL\n\n## Allows people in group wheel to run all commands\n%wheel\tALL=(ALL)\tALL\n\n## Same thing without a password\n# %wheel\tALL=(ALL)\tNOPASSWD: ALL\n\n## Read drop-in files from /etc/sudoers.d (the # here does not mean a comment)\n#includedir /etc/sudoers.d\n', 0o440);
     D('/etc/sudoers.d', 0o750);
-    F('/etc/skel/.bashrc', BASHRC); F('/etc/skel/.profile', PROFILE); F('/etc/skel/.bash_logout', '# ~/.bash_logout: executed by bash(1) when login shell exits.\n');
-    F('/var/log/syslog', 'Oct 27 08:58:02 ubuntu systemd[1]: Started session-2.scope - Session 2 of User user1.\n', 0o640, 104, 4);
-    D(HOME0, 0o750, 1000, 1000);
+    F('/etc/login.defs', '# *REQUIRED*\n#   Directory where mailboxes reside\nMAIL_DIR\t/var/spool/mail\n\nPASS_MAX_DAYS\t99999\nPASS_MIN_DAYS\t0\nPASS_WARN_AGE\t7\n\nUID_MIN                  1000\nUID_MAX                 60000\n\n# If useradd should create home directories for users by default\nCREATE_HOME\tyes\n\n# The permission mask is initialized to this value.\nUMASK\t\t022\n\n# HOME_MODE is used by useradd(8) and newusers(8) to set the mode for new\n# home directories.\nHOME_MODE\t0700\n');
+    F('/etc/skel/.bashrc', BASHRC); F('/etc/skel/.bash_profile', PROFILE); F('/etc/skel/.bash_logout', '# ~/.bash_logout\n\n');
+    F('/var/log/messages', 'Oct 27 08:58:02 localhost systemd[1]: Started session-2.scope - Session 2 of User user1.\n', 0o600);
+    D(HOME0, 0o700, 1000, 1000);
     ['Desktop', 'Documents', 'Downloads', 'Music', 'Pictures', 'Public', 'Templates', 'Videos'].forEach(n => D(HOME0 + '/' + n, 0o755, 1000, 1000));
-    F(HOME0 + '/.bashrc', BASHRC, 0o644, 1000, 1000); F(HOME0 + '/.profile', PROFILE, 0o644, 1000, 1000);
-    F(HOME0 + '/.bash_logout', '# ~/.bash_logout: executed by bash(1) when login shell exits.\n', 0o644, 1000, 1000);
+    F(HOME0 + '/.bashrc', BASHRC, 0o644, 1000, 1000); F(HOME0 + '/.bash_profile', PROFILE, 0o644, 1000, 1000);
+    F(HOME0 + '/.bash_logout', '# ~/.bash_logout\n\n', 0o644, 1000, 1000);
     F(HOME0 + '/test2.sh', '#!/bin/bash\necho "Hello, Linux!"\necho "오늘 날짜: $(date +%F)"\n', 0o664, 1000, 1000);
     F(HOME0 + '/Documents/linux_note.txt', 'Linux = 커널(kernel)\nShell = 명령어 해석기(bash)\n루트 디렉토리 = /\n홈 디렉토리 = ~\n', 0o664, 1000, 1000);
+    F('/var/spool/mail/user1', '', 0o660, 1000, 12);
     BIN.forEach(n => F('/usr/bin/' + n, '\u007fELF', 0o755));
-    ['useradd', 'userdel', 'usermod', 'adduser', 'deluser', 'reboot', 'shutdown'].forEach(n => F('/usr/sbin/' + n, '\u007fELF', 0o755));
+    ['useradd', 'userdel', 'usermod', 'adduser', 'reboot', 'shutdown'].forEach(n => F('/usr/sbin/' + n, '\u007fELF', 0o755));
+    st.distro = 'centos10';
     return st;
   }
-  const BASHRC = '# ~/.bashrc: executed by bash(1) for non-login shells.\n\n# If not running interactively, don\'t do anything\ncase $- in\n    *i*) ;;\n      *) return;;\nesac\n\nHISTSIZE=1000\nHISTFILESIZE=2000\n\nalias ls=\'ls --color=auto\'\nalias grep=\'grep --color=auto\'\nalias ll=\'ls -alF\'\nalias la=\'ls -A\'\nalias l=\'ls -CF\'\n';
-  const PROFILE = '# ~/.profile: executed by the command interpreter for login shells.\n\nif [ -n "$BASH_VERSION" ]; then\n    if [ -f "$HOME/.bashrc" ]; then\n\t. "$HOME/.bashrc"\n    fi\nfi\n';
+  const BASHRC = '# .bashrc\n\n# Source global definitions\nif [ -f /etc/bashrc ]; then\n    . /etc/bashrc\nfi\n\n# User specific environment\nif ! [[ "$PATH" =~ "$HOME/.local/bin:$HOME/bin:" ]]; then\n    PATH="$HOME/.local/bin:$HOME/bin:$PATH"\nfi\nexport PATH\n\n# User specific aliases and functions\n';
+  const PROFILE = '# .bash_profile\n\n# Get the aliases and functions\nif [ -f ~/.bashrc ]; then\n    . ~/.bashrc\nfi\n\n# User specific environment and startup programs\n';
   const BIN = ['bash', 'sh', 'ls', 'cat', 'cp', 'mv', 'rm', 'mkdir', 'rmdir', 'touch', 'echo', 'pwd', 'head', 'tail', 'more', 'less', 'wc', 'grep', 'seq', 'date',
     'uname', 'hostname', 'hostnamectl', 'whoami', 'who', 'id', 'groups', 'tty', 'stat', 'file', 'chmod', 'chown', 'passwd', 'su', 'sudo', 'ps', 'pstree',
-    'kill', 'man', 'mkfifo', 'ping', 'vi', 'vim', 'ln', 'find', 'which', 'clear', 'sleep', 'true', 'false', 'apt', 'gnome-terminal'];
+    'kill', 'man', 'mkfifo', 'ping', 'vi', 'vim', 'ln', 'find', 'which', 'clear', 'sleep', 'true', 'false', 'dnf', 'yum', 'gnome-terminal'];
 
   function mkNode(type, name, mode, uid, gid, t) {
     t = t || Date.now();
@@ -105,7 +178,7 @@
   function load() {
     try {
       const raw = localStorage.getItem(STORE_KEY);
-      if (raw) { const st = JSON.parse(raw); if (st && st.root && st.users) { S = st; S.hostname = S.hostnameStatic = readHostnameFile() || S.hostnameStatic; return true; } }
+      if (raw) { const st = JSON.parse(raw); if (st && st.root && st.users && st.distro === 'centos10') { S = st; S.hostnameStatic = readHostnameFile() || ''; S.hostname = S.hostnameStatic || 'localhost'; return true; } }
     } catch (e) { /* 무시 */ }
     return false;
   }
@@ -263,7 +336,7 @@
     if (n.type === 'c' || n.type === 'b') return;
     n.content = opts.append ? (n.content || '') + text : text;
     n.mtime = n.ctime = Date.now();
-    if (abspathOf(n) === '/etc/hostname') S.hostnameStatic = n.content.trim();
+    if (abspathOf(n) === '/etc/hostname') { S.hostnameStatic = n.content.trim(); }
     return n;
   };
   FS.unlink = function (r) { delete r.parent.children[r.name]; r.parent.mtime = r.parent.ctime = Date.now(); };
@@ -324,7 +397,7 @@
   function titleOf(t) {
     const p = (() => { const s = t.procs.slice().reverse().find(x => x.cmd === 'bash'); return s; })();
     if (!p) return 'Terminal';
-    return `${p.user}@${S.hostname}: ${prettyPath(p.cwd, p.user)}`;
+    return `${p.user}@${shortHost()}:${prettyPath(p.cwd, p.user)}`;
   }
   function renderTitle() { els.title.textContent = titleOf(active); document.title = '리눅스 터미널 실습실'; }
   function prettyPath(cwd, user) {
@@ -333,10 +406,17 @@
     return cwd;
   }
   LAB.prettyPath = prettyPath;
-  function promptHTML(tab) {
-    const s = shOf(tab); const root = s.user === 'root';
-    return `<span class="p-user">${esc(s.user)}@${esc(S.hostname)}</span><span class="p-colon">:</span><span class="p-path">${esc(prettyPath(s.cwd, s.user))}</span><span class="p-sign">${root ? '#' : '$'}</span> `;
+  function shortHost() { return String(S.hostname || 'localhost').split('.')[0]; }
+  LAB.shortHost = shortHost;
+  function baseDir(cwd, user) {
+    const h = S.users[user] ? S.users[user].home : null;
+    if (h && cwd === h) return '~';
+    if (cwd === '/') return '/';
+    return cwd.split('/').pop();
   }
+  function promptText(tab) { const s = shOf(tab); return `[${s.user}@${shortHost()} ${baseDir(s.cwd, s.user)}]${s.user === 'root' ? '#' : '$'} `; }
+  LAB.promptText = () => promptText(active);
+  function promptHTML(tab) { return esc(promptText(tab)); }
   function printTo(tab, text, cls) {
     const lines = String(text).split('\n');
     const frag = document.createDocumentFragment();
@@ -362,7 +442,7 @@
   function scrollBottom() { els.body.scrollTop = els.body.scrollHeight; }
 
   LAB.term = {
-    print: (t, cls) => printTo(active, t, cls),
+    print: (t, cls) => printTo(active, LAB.tr(t), cls),
     printHTML: h => printTo(active, h, 'html'),
     clear: () => { active.out.innerHTML = ''; },
     focus: () => { if (els.kbd) { try { els.kbd.focus({ preventScroll: true }); } catch (e) { els.kbd.focus(); } } },
@@ -380,7 +460,7 @@
   window.addEventListener('resize', () => { cwCache = null; if (active && active.fs) active.fs.render(els.fsLayer); });
 
   function readLineOn(tab, o) {
-    return new Promise(res => { tab.read = { prompt: o.prompt || '', hidden: !!o.hidden, res, buf: '' }; tab.buf = ''; if (tab === active) { els.kbd.value = ''; renderInput(); } });
+    return new Promise(res => { tab.read = { prompt: LAB.tr(o.prompt || ''), hidden: !!o.hidden, res, buf: '' }; tab.buf = ''; if (tab === active) { els.kbd.value = ''; renderInput(); } });
   }
   function setFullscreen(tab, h) {
     if (tab.fs && tab.fs.exit && h === null) { /* 앱이 스스로 종료 */ }
@@ -622,7 +702,7 @@
 
   /* ---------------- 명령 레지스트리 & 실행 ---------------- */
   const CMDS = {}; const META = {};
-  const ALIASES = { ls: 'ls --color=auto', grep: 'grep --color=auto', ll: 'ls -alF', la: 'ls -A', l: 'ls -CF' };
+  const ALIASES = { ls: 'ls --color=auto', grep: 'grep --color=auto', egrep: 'grep -E --color=auto', ll: 'ls -l --color=auto', xzgrep: 'xzgrep --color=auto' };
   LAB.aliases = ALIASES;
   LAB.cmd = (name, fn, meta) => { CMDS[name] = fn; META[name] = meta || {}; };
   LAB.commands = CMDS; LAB.meta = META;
@@ -695,9 +775,9 @@
       let buf = '';
       const io = {
         sh, tab,
-        out: s => { s = String(s); if (toTerm) { printTo(tab, s); outCollected += s; } else buf += s; },
+        out: s => { s = LAB.tr(String(s)); if (toTerm) { printTo(tab, s); outCollected += s; } else buf += s; },
         outHTML: (html, plain) => { if (toTerm) { printTo(tab, html, 'html'); outCollected += plain; } else buf += plain; },
-        err: s => { s = String(s); if (errToOut) { io.out(s); return; } errCollected += s; if (errFile) { if (errFile !== '/dev/null') { try { FS.write(errFile, s, { append: true }, sh); } catch (e) { } } } else printTo(tab, s, 'err'); },
+        err: s => { s = LAB.tr(String(s)); if (errToOut) { io.out(s); return; } errCollected += s; if (errFile) { if (errFile !== '/dev/null') { try { FS.write(errFile, s, { append: true }, sh); } catch (e) { } } } else printTo(tab, s, 'err'); },
         stdin, tty: toTerm, toTerm, piped: stdin !== null, redir: { outFile, outAppend },
         get aborted() { return tab.abort; },
         sudo: false,
@@ -726,9 +806,7 @@
     if (name.includes('/')) return runScript(name, argv, io);
     const fn = CMDS[name];
     if (!fn) {
-      const sug = SUGGEST[name];
-      if (sug) io.err(`Command '${name}' not found, but can be installed with:\nsudo apt install ${sug}\n`);
-      else io.err(`${name}: command not found\n`);
+      io.err(`bash: ${name}: command not found...\n`);
       return 127;
     }
     try { const r = await fn(argv, io); return r == null ? 0 : r; }
@@ -765,13 +843,20 @@
   LAB.sudoAuth = async function (io) {
     const sh = io.sh; const tab = io.tab; const user = sh.user;
     if (S.users[user].uid === 0) return true;
-    if (!U.groupsOf(user).includes('sudo')) {
+    if (!U.groupsOf(user).includes('wheel')) {
       const pw = await readLineOn(tab, { prompt: `[sudo] password for ${user}: `, hidden: true });
       if (pw === null) return false;
       io.err(`${user} is not in the sudoers file.\n`); return false;
     }
     tab.sudoUntil = tab.sudoUntil || {};
     if (tab.sudoUntil[user] && tab.sudoUntil[user] > Date.now()) return true;
+    S.sudoLectured = S.sudoLectured || {};
+    if (!S.sudoLectured[user]) {
+      S.sudoLectured[user] = true;
+      io.err(LAB.lang === 'ko'
+        ? '\n로컬 시스템 관리자에게 일반적인 지침을 받았다고 믿습니다.\n보통 세가지로 요약합니다:\n\n    #1) 타인의 사생활을 존중하십시오.\n    #2) 입력하기 전에 한 번 더 생각하십시오.\n    #3) 막강한 힘에는 막중한 책임이 뒤따릅니다.\n\n'
+        : '\nWe trust you have received the usual lecture from the local System\nAdministrator. It usually boils down to these three things:\n\n    #1) Respect the privacy of others.\n    #2) Think before you type.\n    #3) With great power comes great responsibility.\n\n');
+    }
     for (let i = 0; i < 3; i++) {
       const pw = await readLineOn(tab, { prompt: `[sudo] password for ${user}: `, hidden: true });
       if (pw === null) return false;
@@ -831,9 +916,17 @@
   LAB.reboot = async function () {
     els.boot.hidden = false; els.boot.querySelector('.boot-msg').textContent = '다시 시작하는 중…';
     await LAB.sleep(1400);
-    S.hostname = readHostnameFile() || 'ubuntu'; S.hostnameStatic = S.hostname;
+    S.hostnameStatic = readHostnameFile() || ''; S.hostname = S.hostnameStatic || 'localhost';
     tabs.splice(0); nextPts = 0; const t = makeTab(); active = null; switchTab(t); banner(t);
     els.boot.hidden = true; save(); LAB.emit('reboot', {});
+  };
+  // 과제를 고르면: 파일시스템·계정·호스트명을 처음 상태로, 탭 하나, 홈에서 시작
+  LAB.prepare = function (opts) {
+    opts = opts || {};
+    freshState();
+    if (opts.setup) { try { opts.setup(LAB); } catch (e) { console.error(e); } }
+    tabs.splice(0); nextPts = 0; const t = makeTab(); t.bannerText = opts.banner || null; active = null; switchTab(t); banner(t); save();
+    LAB.emit('prepare', opts);
   };
   LAB.resetAll = function () {
     try { localStorage.removeItem(STORE_KEY); localStorage.removeItem('linuxlab.hist.v1'); localStorage.removeItem('linuxlab.progress.v1'); } catch (e) { }
@@ -843,8 +936,8 @@
   LAB.flash = flash;
 
   function banner(tab) {
-    printTo(tab, 'Welcome to Ubuntu 24.04.1 LTS (GNU/Linux 6.8.0-45-generic x86_64) — 실습용 가상 터미널\n', 'dim');
-    printTo(tab, "도움말: help  ·  새 탭: Ctrl+Shift+T  ·  자동 완성: Tab  ·  이전 명령: ↑  ·  중단: Ctrl+C\n\n", 'dim');
+    if (tab.bannerText) { printTo(tab, tab.bannerText + '\n\n', 'dim'); return; }
+    printTo(tab, 'CentOS Stream 10 실습용 가상 터미널  ·  도움말: help  ·  자동 완성: Tab  ·  이전 명령: ↑  ·  중단: Ctrl+C\n\n', 'dim');
   }
 
   /* ---------------- 날짜 포맷 ---------------- */
@@ -854,6 +947,7 @@
   function tzName(d) { const off = -d.getTimezoneOffset(); if (off === 540) return 'KST'; if (off === 0) return 'UTC'; const h = Math.trunc(off / 60); return (h >= 0 ? '+' : '-') + p2(Math.abs(h)); }
   function tzOff(d) { const off = -d.getTimezoneOffset(); return (off >= 0 ? '+' : '-') + p2(Math.floor(Math.abs(off) / 60)) + p2(Math.abs(off) % 60); }
   function fmtDate(d, fmt) {
+    if (!fmt && LAB.lang === 'ko') return `${d.getFullYear()}. ${p2(d.getMonth() + 1)}. ${p2(d.getDate())}. (${'일월화수목금토'[d.getDay()]}) ${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())} ${tzName(d)}`;
     if (!fmt) return `${DAYS[d.getDay()].slice(0, 3)} ${MONS[d.getMonth()].slice(0, 3)} ${String(d.getDate()).padStart(2, ' ')} ${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())} ${tzName(d)} ${d.getFullYear()}`;
     const doy = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 864e5);
     return fmt.replace(/%([a-zA-Z%])/g, (m, c) => ({
@@ -947,3 +1041,11 @@
     LAB.emit('ready', {});
   };
 })();
+/* 언어 버튼 */
+(function (LAB) {
+  function sync() { ['ko', 'en'].forEach(l => { const b = document.getElementById('lang-' + l); if (b) { b.classList.toggle('on', LAB.lang === l); b.setAttribute('aria-pressed', LAB.lang === l); } }); }
+  LAB.on('ready', () => {
+    sync();
+    document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => { LAB.setLang(b.dataset.lang); sync(); LAB.flash(b.dataset.lang === 'ko' ? '메시지를 한국어(한국어로 설치한 CentOS)로 보여 줘요.' : 'Messages are now shown in English.'); LAB.term.focus(); }));
+  });
+})(window.LAB);

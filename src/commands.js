@@ -1,4 +1,4 @@
-/* 리눅스 실습 터미널 — 명령어 구현 (출력·에러 문구는 Ubuntu 24.04 coreutils/bash 기준) */
+/* 리눅스 실습 터미널 — 명령어 구현 (출력·에러 문구는 CentOS Stream 10 coreutils/bash 기준) */
 (function (LAB) {
   'use strict';
   const FS = LAB.fs, esc = LAB.esc, U = LAB.users;
@@ -51,7 +51,7 @@
   }
   LAB.modeStr = modeStr;
   function sizeOf(n) {
-    if (n.type === 'd') return 4096;
+    if (n.type === 'd') { const ks = Object.keys(n.children); const v = 6 + ks.reduce((t, k) => t + utf8len(k) + 8, 0); return v > 330 ? 4096 : v; }
     if (n.type === 'l') return utf8len(n.target);
     if (n.type === 'p' || n.type === 'c' || n.type === 'b') return 0;
     return utf8len(FS.content(n));
@@ -61,6 +61,7 @@
   function lsDate(ms) {
     const d = new Date(ms); const six = 1000 * 60 * 60 * 24 * 182;
     const day = String(d.getDate()).padStart(2, ' ');
+    if (LAB.lang === 'ko') { const mo = (d.getMonth() + 1) + '월'; return Math.abs(Date.now() - ms) < six ? `${mo} ${day} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : `${mo} ${day}  ${d.getFullYear()}`; }
     if (Math.abs(Date.now() - ms) < six) return `${MON[d.getMonth()]} ${day} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
     return `${MON[d.getMonth()]} ${day}  ${d.getFullYear()}`;
   }
@@ -108,7 +109,7 @@
     };
     const printLong = (arr, withTotal) => {
       if (withTotal) {
-        const tot = arr.reduce((s, e) => s + (e.node.type === 'd' ? 4 : e.node.type === 'f' ? Math.ceil(sizeOf(e.node) / 4096) * 4 : 0), 0);
+        const tot = arr.reduce((s, e) => s + (e.node.type === 'd' ? (sizeOf(e.node) >= 4096 ? 4 : 0) : e.node.type === 'f' ? Math.ceil(sizeOf(e.node) / 4096) * 4 : 0), 0);
         io.out(`total ${tot}\n`);
       }
       const rows = arr.map(e => {
@@ -119,7 +120,7 @@
         const d = decorate(e);
         let name = d.html, plainName = d.plain;
         if (n.type === 'l') { name += ' -&gt; ' + esc(n.target); plainName += ' -> ' + n.target; }
-        return { ino: String(n.ino), perm: modeStr(n), links: String(nlinks(n)), owner, group, size, date: lsDate(timeOf(n)), name, plainName };
+        return { ino: String(n.ino), perm: modeStr(n) + '.', links: String(nlinks(n)), owner, group, size, date: lsDate(timeOf(n)), name, plainName };
       });
       const W = k => Math.max(...rows.map(r => r[k].length), 0);
       const wi = W('ino'), wl = W('links'), wo = W('owner'), wg = W('group'), ws = W('size');
@@ -574,15 +575,22 @@
       const r = FS.resolve(t, { nofollow: !o.L }, io.sh);
       if (!r.node) { io.err(`stat: cannot statx ${q(t)}: ${LAB.errMsg(r.err === 'EACCES' ? 'EACCES' : 'ENOENT')}\n`); code = 1; continue; }
       const n = r.node; const size = sizeOf(n);
-      const kind = n.type === 'd' ? 'directory' : n.type === 'l' ? 'symbolic link' : n.type === 'p' ? 'fifo' : n.type === 'c' ? 'character special file' : n.type === 'b' ? 'block special file' : (size === 0 ? 'regular empty file' : 'regular file');
+      const ko = LAB.lang === 'ko';
+      const kind = ko ? (n.type === 'd' ? '디렉터리' : n.type === 'l' ? '심볼릭 링크' : n.type === 'p' ? 'fifo' : n.type === 'c' ? '문자 특수 파일' : n.type === 'b' ? '블록 특수 파일' : (size === 0 ? '일반 빈 파일' : '일반 파일'))
+        : (n.type === 'd' ? 'directory' : n.type === 'l' ? 'symbolic link' : n.type === 'p' ? 'fifo' : n.type === 'c' ? 'character special file' : n.type === 'b' ? 'block special file' : (size === 0 ? 'regular empty file' : 'regular file'));
+      const abs = r.abs;
+      const ctx = abs.startsWith('/home/') ? 'unconfined_u:object_r:user_home_t:s0' : abs.startsWith('/etc/') ? 'system_u:object_r:etc_t:s0' : abs.startsWith('/tmp') ? 'unconfined_u:object_r:user_tmp_t:s0' : abs.startsWith('/root') ? 'system_u:object_r:admin_home_t:s0' : 'system_u:object_r:default_t:s0';
+      const L = ko ? { file: '  파일', size: '  크기', blocks: '블록', io: 'IO 블록', dev: '장치', ino: '아이노드', links: '링크', acc: '접근', ctxl: '컨텍스트', mod: '수정', chg: '변경', birth: ' 생성' }
+        : { file: '  File', size: '  Size', blocks: 'Blocks', io: 'IO Block', dev: 'Device', ino: 'Inode', links: 'Links', acc: 'Access', ctxl: 'Context', mod: 'Modify', chg: 'Change', birth: ' Birth' };
       const blocks = n.type === 'd' ? 8 : n.type === 'f' ? Math.ceil(size / 4096) * 8 : 0;
       const uname = U.byUid(n.uid), gname = U.groupByGid(n.gid);
       const oct = (n.mode & 0o7777).toString(8).padStart(4, '0');
-      io.out(`  File: ${t}${n.type === 'l' ? ' -> ' + n.target : ''}\n`);
-      io.out(`  Size: ${String(size).padEnd(10)}\tBlocks: ${String(blocks).padEnd(10)} IO Block: 4096   ${kind}\n`);
-      io.out(`Device: ${n.type === 'c' || n.type === 'b' ? '0,5' : '8,2'}\tInode: ${String(n.ino).padEnd(11)} Links: ${nlinks(n)}${n.type === 'c' || n.type === 'b' ? '     Device type: 1,3' : ''}\n`);
-      io.out(`Access: (${oct}/${modeStr(n)})  Uid: (${String(n.uid).padStart(5)}/${uname.padStart(8)})   Gid: (${String(n.gid).padStart(5)}/${gname.padStart(8)})\n`);
-      io.out(`Access: ${nsTime(n.atime, n.ino)}\nModify: ${nsTime(n.mtime, n.ino + 1)}\nChange: ${nsTime(n.ctime, n.ino + 2)}\n Birth: ${nsTime(n.btime, n.ino + 3)}\n`);
+      io.out(`${L.file}: ${t}${n.type === 'l' ? ' -> ' + n.target : ''}\n`);
+      io.out(`${L.size}: ${String(size).padEnd(10)}\t${L.blocks}: ${String(blocks).padEnd(10)} ${L.io}: 4096   ${kind}\n`);
+      io.out(`${L.dev}: ${n.type === 'c' || n.type === 'b' ? '0,5' : '253,0'}\t${L.ino}: ${String(n.ino).padEnd(11)} ${L.links}: ${nlinks(n)}\n`);
+      io.out(`${L.acc}: (${oct}/${modeStr(n)})  Uid: (${String(n.uid).padStart(5)}/${uname.padStart(8)})   Gid: (${String(n.gid).padStart(5)}/${gname.padStart(8)})\n`);
+      io.out(`${L.ctxl}: ${ctx}\n`);
+      io.out(`${L.acc}: ${nsTime(n.atime, n.ino)}\n${L.mod}: ${nsTime(n.mtime, n.ino + 1)}\n${L.chg}: ${nsTime(n.ctime, n.ino + 2)}\n${L.birth}: ${nsTime(n.btime, n.ino + 3)}\n`);
     }
     return code;
   }, { help: '파일 상태 (크기, inode, 권한, Access/Modify/Change/Birth 시간)' });
@@ -671,7 +679,7 @@
   }, { help: '소유자 바꾸기 (root만)' });
 
   /* ======================= 시스템 정보 ======================= */
-  const KREL = '6.8.0-45-generic', KVER = '#45-Ubuntu SMP PREEMPT_DYNAMIC Fri Aug 30 12:02:04 UTC 2024';
+  const KREL = '6.12.0-55.el10.x86_64', KVER = '#1 SMP PREEMPT_DYNAMIC Mon Feb 10 12:34:56 UTC 2025';
   cmd('uname', async (argv, io) => {
     const { o } = getopt(argv, '', { all: 'a', 'kernel-name': 's', nodename: 'n', 'kernel-release': 'r', 'kernel-version': 'v', machine: 'm', processor: 'p', 'hardware-platform': 'i', 'operating-system': 'o' });
     const parts = [];
@@ -681,8 +689,8 @@
     if (all || o.r) parts.push(KREL);
     if (all || o.v) parts.push(KVER);
     if (all || o.m) parts.push('x86_64');
-    if (all || o.p) parts.push('x86_64');
-    if (all || o.i) parts.push('x86_64');
+    if (o.p) parts.push('x86_64');
+    if (o.i) parts.push('x86_64');
     if (all || o.o) parts.push('GNU/Linux');
     io.out(parts.join(' ') + '\n'); return 0;
   }, { help: '운영체제·커널 정보 (-a 전부, -s -n -r -v -m -p -i -o)' });
@@ -690,7 +698,7 @@
   cmd('hostname', async (argv, io) => {
     const { o, a } = getopt(argv, '', { 'all-ip-addresses': 'I', 'ip-address': 'i', fqdn: 'f', short: 's' });
     if (o.I) { io.out('10.0.2.15 \n'); return 0; }
-    if (o.i) { io.out('127.0.1.1\n'); return 0; }
+    if (o.i) { io.out('::1 127.0.0.1\n'); return 0; }
     if (!a.length) { io.out(S().hostname + '\n'); return 0; }
     if (LAB.users.get(io.sh.euser).uid !== 0) { io.err('hostname: you must be root to change the host name\n'); return 1; }
     S().hostname = a[0]; return 0;
@@ -700,18 +708,20 @@
     const a = argv.slice(1).filter(x => !x.startsWith('-'));
     const sub = a[0] || 'status';
     const st = () => {
-      const stat = (FS.lookupAbs('/etc/hostname') || {}).content;
-      const s = (stat || 'ubuntu').trim();
-      let out = ` Static hostname: ${s}\n`;
-      if (S().hostname !== s) out += `Transient hostname: ${S().hostname}\n`;
-      out += `       Icon name: computer-vm\n         Chassis: vm 🖴\n      Machine ID: 5d1f9c3a7e2b4c0f8a6d2e1b9c7a4f30\n         Boot ID: 9b2e7c41d0a54f6e8c3b1a2d7f6e5c49\n  Virtualization: oracle\nOperating System: Ubuntu 24.04.1 LTS\n          Kernel: Linux ${KREL}\n    Architecture: x86-64\n Hardware Vendor: innotek GmbH\n  Hardware Model: VirtualBox\nFirmware Version: VirtualBox\n   Firmware Date: Fri 2006-12-01\n    Firmware Age: 17y 10month 3w 2d\n`;
+      const s = ((FS.lookupAbs('/etc/hostname') || {}).content || '').trim();
+      const row = (k, v) => k.padStart(20) + ': ' + v + '\n';
+      let out = row('Static hostname', s || '(unset)');
+      if (S().hostname !== s) out += row('Transient hostname', S().hostname);
+      out += row('Icon name', 'computer-vm') + row('Chassis', 'vm 🖴') + row('Machine ID', '5d1f9c3a7e2b4c0f8a6d2e1b9c7a4f30') + row('Boot ID', '9b2e7c41d0a54f6e8c3b1a2d7f6e5c49') +
+        row('Virtualization', 'oracle') + row('Operating System', 'CentOS Stream 10 (Coughlan)') + row('CPE OS Name', 'cpe:/o:centos:centos:10') + row('Kernel', 'Linux ' + KREL) +
+        row('Architecture', 'x86-64') + row('Hardware Vendor', 'innotek GmbH') + row('Hardware Model', 'VirtualBox') + row('Firmware Version', 'VirtualBox') + row('Firmware Date', 'Fri 2006-12-01') + row('Firmware Age', '18y 10month 3w 3d');
       return out;
     };
     if (sub === 'status') { io.out(st()); return 0; }
     if (sub === 'hostname') { if (a[1]) return LAB.exec(['hostnamectl', 'set-hostname', a[1]], io); io.out(S().hostname + '\n'); return 0; }
     if (sub === 'set-hostname') {
       if (!a[1]) { io.err('Too few arguments.\n'); return 1; }
-      if (LAB.users.get(io.sh.euser).uid !== 0) { io.err('Could not set static hostname: Access denied\n'); return 1; }
+      if (LAB.users.get(io.sh.euser).uid !== 0) { io.err('==== AUTHENTICATING FOR org.freedesktop.hostname1.set-static-hostname ====\n' + (LAB.lang === 'ko' ? '시스템 정적 호스트 이름을 설정하려면 인증이 필요합니다.\n' : 'Authentication is required to set the statically configured local hostname, as well as the pretty hostname.\n') + 'Authenticating as: user1\n'); const pw = await io.readLine({ prompt: 'Password: ', hidden: true }); if (!pw || pw === '\u0004') { io.err('polkit-agent-helper-1: pam_authenticate failed: Authentication failure\n==== AUTHENTICATION FAILED ====\nCould not set static hostname: Access denied\n'); return 1; } io.err('==== AUTHENTICATION COMPLETE ====\n'); }
       const n = FS.lookupAbs('/etc/hostname'); n.content = a[1] + '\n'; n.mtime = n.ctime = Date.now();
       S().hostname = a[1]; S().hostnameStatic = a[1]; return 0;
     }
@@ -728,7 +738,7 @@
     if (o.a) {
       io.out(`           system boot  ${dt(boot)}\n           run-level 5  ${dt(new Date(boot.getTime() + 30000))}\nLOGIN      tty1         ${dt(new Date(boot.getTime() + 40000))}               812 id=tty1\n`);
     }
-    io.out(`user1    seat0        ${dt(login)} (login screen)\nuser1    :0           ${dt(login)} (:0)\n`);
+    io.out(`user1    seat0        ${dt(login)} (login screen)\nuser1    tty2         ${dt(login)} (tty2)\n`);
     return 0;
   }, { help: '로그인한 사용자 목록 (-a 부팅 시간 등 전부)' });
   cmd('tty', async (argv, io) => { if (io.stdin != null && !io.toTerm) { io.out('not a tty\n'); return 1; } io.out('/dev/' + io.tab.tty + '\n'); return 0; }, { help: '현재 터미널 장치 이름 (pts/0 = 가상 터미널)' });
@@ -740,7 +750,8 @@
     if (o.u) { io.out((o.n ? name : u.uid) + '\n'); return 0; }
     if (o.g) { io.out((o.n ? gs[0] : u.gid) + '\n'); return 0; }
     if (o.G) { io.out(gs.map(g => o.n ? g : S().groups[g].gid).join(' ') + '\n'); return 0; }
-    io.out(`uid=${u.uid}(${name}) gid=${u.gid}(${gs[0]}) groups=${gs.map(g => `${S().groups[g].gid}(${g})`).join(',')}\n`);
+    const ctx = a[0] ? '' : (u.uid === 0 ? ' context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023' : ' context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023');
+    io.out(`uid=${u.uid}(${name}) gid=${u.gid}(${gs[0]}) groups=${gs.map(g => `${S().groups[g].gid}(${g})`).join(',')}${ctx}\n`);
     return 0;
   }, { help: '사용자 UID/GID/그룹 확인 (id 사용자)' });
   cmd('groups', async (argv, io) => {
@@ -825,43 +836,47 @@
   const isRoot = io => LAB.users.get(io.sh.euser).uid === 0;
   function copySkel(name) {
     const u = LAB.users.get(name); const sk = FS.lookupAbs('/etc/skel'); const home = FS.lookupAbs('/home');
-    const hd = FS.mkNode('d', name, 0o750, u.uid, u.gid);
+    const hd = FS.mkNode('d', name, 0o700, u.uid, u.gid);
     for (const k in sk.children) { const f = FS.mkNode('f', k, 0o644, u.uid, u.gid); f.content = sk.children[k].content; hd.children[k] = f; }
     home.children[name] = hd;
   }
   cmd('useradd', async (argv, io) => {
-    const { o, a } = getopt(argv, 'dscgG', { 'create-home': 'm', shell: 's', comment: 'c', home: 'd' });
+    const { o, a } = getopt(argv, 'dscgG', { 'create-home': 'm', 'no-create-home': 'M', shell: 's', comment: 'c', home: 'd' });
     if (!a.length) { io.err('Usage: useradd [options] LOGIN\n       useradd -D\n       useradd -D [options]\n'); return 2; }
     if (!isRoot(io)) { io.err('useradd: Permission denied.\nuseradd: cannot lock /etc/passwd; try again later.\n'); return 1; }
     const name = a[0];
     if (!/^[a-z_][a-z0-9_-]*\$?$/.test(name)) { io.err(`useradd: invalid user name '${name}': use --badname to ignore\n`); return 3; }
     if (LAB.users.get(name)) { io.err(`useradd: user '${name}' already exists\n`); return 9; }
-    const u = LAB.users.add(name, { shell: o.s || '/bin/sh', gecos: o.c || '' }); if (o.d) u.home = o.d;
-    if (o.m) { if (FS.lookupAbs(u.home)) io.err(`useradd: warning: the home directory ${u.home} already exists.\nuseradd: Not copying any file from skel directory into it.\n`); else copySkel(name); }
+    const u = LAB.users.add(name, { shell: o.s || '/bin/bash', gecos: o.c || '' }); if (o.d) u.home = o.d;
+    if (!o.M) { if (FS.lookupAbs(u.home)) io.err(`useradd: warning: the home directory ${u.home} already exists.\nuseradd: Not copying any file from skel directory into it.\n`); else copySkel(name); }
+    const spool = FS.lookupAbs('/var/spool/mail');
+    if (spool) { if (spool.children[name]) io.err('Creating mailbox file: File exists\n'); else { const m = FS.mkNode('f', name, 0o660, u.uid, 12); spool.children[name] = m; } }
     return 0;
-  }, { help: '사용자 추가 (sudo useradd -m 이름 : 홈 디렉토리 함께 생성)' });
+  }, { help: '사용자 추가 (sudo useradd 이름 : CentOS는 홈 디렉토리 자동 생성)' });
 
   async function newPassword(io, name) {
     const p1 = await io.readLine({ prompt: 'New password: ', hidden: true }); if (p1 === null) return false;
+    if (!p1 || p1 === '\u0004') { io.err('passwd: Authentication token manipulation error\n'); return false; }
+    if (p1.length < 8) io.out('BAD PASSWORD: The password is shorter than 8 characters\n');
     const p2 = await io.readLine({ prompt: 'Retype new password: ', hidden: true }); if (p2 === null) return false;
-    if (p1 !== p2) { io.err('Sorry, passwords do not match.\npasswd: Authentication token manipulation error\npasswd: password unchanged\n'); return false; }
-    if (!p1) { io.err('No password has been supplied.\npasswd: Authentication token manipulation error\npasswd: password unchanged\n'); return false; }
-    LAB.users.get(name).hasPassword = true; io.out('passwd: password updated successfully\n'); return true;
+    if (p1 !== p2) { io.err('Sorry, passwords do not match.\npasswd: Authentication token manipulation error\n'); return false; }
+    LAB.users.get(name).hasPassword = true; io.out('passwd: all authentication tokens updated successfully.\n'); return true;
   }
   cmd('passwd', async (argv, io) => {
     const { a } = getopt(argv, '');
     const me = io.sh.euser; const name = a[0] || me;
     if (!LAB.users.get(name)) { io.err(`passwd: user '${name}' does not exist\n`); return 1; }
-    if (name !== me && !isRoot(io)) { io.err(`passwd: You may not view or modify password information for ${name}.\n`); return 1; }
+    if (name !== me && !isRoot(io)) { io.err('passwd: Only root can specify a user name.\n'); return 1; }
+    io.out(`Changing password for user ${name}.\n`);
     if (!isRoot(io)) {
-      io.out(`Changing password for ${name}.\n`);
       const cur = await io.readLine({ prompt: 'Current password: ', hidden: true }); if (cur === null) return 1;
       if (!cur) { io.err('passwd: Authentication token manipulation error\npasswd: password unchanged\n'); return 10; }
     }
     return (await newPassword(io, name)) ? 0 : 10;
   }, { help: '비밀번호 바꾸기 (sudo passwd 사용자)' });
 
-  cmd('adduser', async (argv, io) => {
+  cmd('adduser', async (argv, io) => LAB.exec(['useradd'].concat(argv.slice(1)), io), { help: 'useradd와 같음 (CentOS에서는 useradd로 연결된 링크)' });
+  cmd('_adduser_debian', async (argv, io) => {
     const { a } = getopt(argv, '');
     if (!isRoot(io)) { io.err('fatal: Only root may add a user or group to the system.\n'); return 1; }
     const name = a[0]; if (!name) { io.err('fatal: Only one or two names allowed.\n'); return 1; }
@@ -888,7 +903,8 @@
     if (p) { io.err(`userdel: user ${name} is currently used by process ${p.pid}\n`); if (!o.f) return 8; }
     if (o.r) {
       const h = FS.resolve(u.home, { nofollow: true }, { cwd: '/', user: 'root', euser: 'root' });
-      if (!LAB._S().mail[name]) io.err(`userdel: ${name} mail spool (/var/mail/${name}) not found\n`);
+      const sp = FS.lookupAbs('/var/spool/mail');
+      if (sp && sp.children[name]) delete sp.children[name]; else io.err(`userdel: ${name} mail spool (/var/spool/mail/${name}) not found\n`);
       if (h.node) FS.unlink(h); else io.err(`userdel: ${name} home directory (${u.home}) not found\n`);
     }
     LAB.users.del(name);
@@ -1079,14 +1095,13 @@
   /* ping */
   function lookupHost(h) {
     if (/^\d+\.\d+\.\d+\.\d+$/.test(h)) return { ip: h, name: h };
-    if (h === 'localhost') return { ip: '127.0.0.1', name: 'localhost' };
+    if (h === 'localhost' || h === 'localhost.localdomain' || h === LAB._S().hostname) return { ip: '::1', name: h, v6: true };
     const hosts = FS.content(FS.lookupAbs('/etc/hosts'));
     for (const line of hosts.split('\n')) {
       const ln = line.replace(/#.*/, '').trim(); if (!ln) continue;
       const [ip, ...names] = ln.split(/\s+/);
       if (names.includes(h) && /^\d+\.\d+\.\d+\.\d+$/.test(ip)) return { ip, name: names[0] };
     }
-    if (h === LAB._S().hostname) return { ip: '127.0.1.1', name: h };
     return null;
   }
   cmd('ping', async (argv, io) => {
@@ -1095,8 +1110,8 @@
     if (!host) { io.err('ping: usage error: Destination address required\n'); return 1; }
     const h = lookupHost(host);
     if (!h) { io.err(`ping: ${host}: Temporary failure in name resolution\n`); return 2; }
-    const count = o.c ? parseInt(o.c, 10) : Infinity; const loop = h.ip.startsWith('127.');
-    io.out(`PING ${h.name === h.ip ? h.ip : h.name} (${h.ip}) 56(84) bytes of data.\n`);
+    const count = o.c ? parseInt(o.c, 10) : Infinity; const loop = h.ip.startsWith('127.') || h.ip === '::1';
+    io.out(h.v6 ? `PING ${h.name} (${h.ip}) 56 data bytes\n` : `PING ${h.name === h.ip ? h.ip : h.name} (${h.ip}) 56(84) bytes of data.\n`);
     let sent = 0, recv = 0; const times = []; const t0 = Date.now();
     while (sent < count && !io.aborted) {
       sent++;
@@ -1137,7 +1152,8 @@
   cmd('which', async (argv, io) => {
     let code = 0;
     for (const n of argv.slice(1).filter(x => !x.startsWith('-'))) {
-      if (LAB.commands[n] && !LAB.builtins.includes(n) || n === 'echo' || n === 'pwd' || n === 'kill') io.out(`${['useradd', 'userdel', 'adduser', 'deluser', 'reboot'].includes(n) ? '/usr/sbin/' : '/usr/bin/'}${n}\n`); else code = 1;
+      if (LAB.commands[n] && !LAB.builtins.includes(n) || n === 'echo' || n === 'pwd' || n === 'kill') { if (LAB.aliases[n]) io.out(`alias ${n}='${LAB.aliases[n]}'\n\t`); io.out(`${['useradd', 'userdel', 'adduser', 'reboot'].includes(n) ? '/usr/sbin/' : '/usr/bin/'}${n}\n`); }
+      else { io.err(`/usr/bin/which: no ${n} in (/home/user1/.local/bin:/home/user1/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin)\n`); code = 1; }
     }
     return code;
   }, { help: '명령 파일 위치' });
@@ -1190,28 +1206,33 @@
   }, { help: '재부팅 (sudo reboot) — 일시적으로 바꾼 hostname이 원래대로' });
   cmd('shutdown', async (argv, io) => { io.err('이 실습 터미널에서는 shutdown 대신 sudo reboot을 써 보세요.\n'); return 1; }, { help: '(실습에서는 sudo reboot 사용)' });
 
-  cmd('apt', async (argv, io) => {
-    const sub = argv[1];
-    if (!sub) { io.out('apt 2.7.14 (amd64)\nUsage: apt [options] command\n\nMost used commands:\n  list - list packages based on package names\n  search - search in package descriptions\n  install - install packages\n  remove - remove packages\n  update - update list of available packages\n'); return 0; }
-    if ((sub === 'install' || sub === 'update' || sub === 'remove') && !isRoot(io)) {
-      io.err(sub === 'update' ? 'Reading package lists... Done\nE: Could not open lock file /var/lib/apt/lists/lock - open (13: Permission denied)\nE: Unable to lock directory /var/lib/apt/lists/\n' : 'E: Could not open lock file /var/lib/dpkg/lock-frontend - open (13: Permission denied)\nE: Unable to acquire the dpkg frontend lock (/var/lib/dpkg/lock-frontend), are you root?\n');
-      return 100;
-    }
-    if (sub === 'update') { for (const l of ['Hit:1 http://kr.archive.ubuntu.com/ubuntu noble InRelease', 'Hit:2 http://kr.archive.ubuntu.com/ubuntu noble-updates InRelease', 'Hit:3 http://security.ubuntu.com/ubuntu noble-security InRelease', 'Reading package lists... Done', 'Building dependency tree... Done', 'Reading state information... Done', 'All packages are up to date.']) { io.out(l + '\n'); await LAB.sleep(250); } return 0; }
+  async function dnfCmd(argv, io) {
+    const name = argv[0]; const sub = argv[1]; const yes = argv.includes('-y');
+    if (!sub) { io.out(`usage: ${name} [options] COMMAND\n\nList of Main Commands:\n\ninstall    Install a package or packages on your system\nremove     Remove a package or packages from your system\nlist       List a package or groups of packages\nsearch     Search package details for the given string\ncheck-update  Check for available package upgrades\n`); return 1; }
+    if ((sub === 'install' || sub === 'remove' || sub === 'update') && !isRoot(io)) { io.err('Error: This command has to be run with superuser privileges (under the root user on most systems).\n'); return 1; }
+    const meta = `Last metadata expiration check: 0:21:43 ago on ${LAB.fmtDate(new Date(Date.now() - 1303000))}.\n`;
+    if (sub === 'update' || sub === 'check-update') { io.out(meta + 'Dependencies resolved.\nNothing to do.\nComplete!\n'); return 0; }
     if (sub === 'install') {
       const pk = argv.slice(2).filter(x => !x.startsWith('-'))[0];
-      io.out('Reading package lists... Done\nBuilding dependency tree... Done\nReading state information... Done\n');
-      if (pk !== 'tree') { io.err(`E: Unable to locate package ${pk}\n`); return 100; }
-      if (LAB._S().installed.tree) { io.out('tree is already the newest version (2.1.1-2ubuntu3).\n0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.\n'); return 0; }
-      for (const l of ['The following NEW packages will be installed:', '  tree', '0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.', 'Need to get 47.4 kB of archives.', 'After this operation, 111 kB of additional disk space will be used.', 'Get:1 http://kr.archive.ubuntu.com/ubuntu noble/universe amd64 tree amd64 2.1.1-2ubuntu3 [47.4 kB]', 'Fetched 47.4 kB in 1s (52.1 kB/s)', 'Selecting previously unselected package tree.', '(Reading database ... 198412 files and directories currently installed.)', 'Preparing to unpack .../tree_2.1.1-2ubuntu3_amd64.deb ...', 'Unpacking tree (2.1.1-2ubuntu3) ...', 'Setting up tree (2.1.1-2ubuntu3) ...', 'Processing triggers for man-db (2.12.0-4build2) ...']) { io.out(l + '\n'); await LAB.sleep(180); }
+      if (!pk) { io.err('Error: Need to pass a list of pkgs to install\n'); return 1; }
+      io.out(meta);
+      if (pk !== 'tree') { io.err(`No match for argument: ${pk}\nError: Unable to find a match: ${pk}\n`); return 1; }
+      if (LAB._S().installed.tree) { io.out('Package tree-2.1.0-8.el10.x86_64 is already installed.\nDependencies resolved.\nNothing to do.\nComplete!\n'); return 0; }
+      const bar = '='.repeat(80);
+      io.out(`Dependencies resolved.\n${bar}\n Package        Architecture     Version                  Repository        Size\n${bar}\nInstalling:\n tree           x86_64           2.1.0-8.el10             baseos            59 k\n\nTransaction Summary\n${bar}\nInstall  1 Package\n\nTotal download size: 59 k\nInstalled size: 115 k\n`);
+      if (!yes) { const ans = await io.readLine({ prompt: 'Is this ok [y/N]: ' }); if (!ans || !/^y/i.test(ans)) { io.out('Operation aborted.\n'); return 1; } }
+      for (const l of ['Downloading Packages:', 'tree-2.1.0-8.el10.x86_64.rpm                    412 kB/s |  59 kB     00:00', '-'.repeat(80), 'Total                                           118 kB/s |  59 kB     00:00', 'Running transaction check', 'Transaction check succeeded.', 'Running transaction test', 'Transaction test succeeded.', 'Running transaction', '  Preparing        :                                                        1/1', '  Installing       : tree-2.1.0-8.el10.x86_64                               1/1', '  Running scriptlet: tree-2.1.0-8.el10.x86_64                               1/1', '', 'Installed:', '  tree-2.1.0-8.el10.x86_64', '', 'Complete!']) { io.out(l + '\n'); await LAB.sleep(120); }
       LAB._S().installed.tree = true; const f = FS.mkNode('f', 'tree', 0o755, 0, 0); f.content = '\u007fELF'; FS.lookupAbs('/usr/bin').children.tree = f;
       return 0;
     }
-    io.err(`E: Invalid operation ${sub}\n`); return 100;
-  }, { help: '패키지 설치 (sudo apt install tree)' });
+    if (sub === 'list') { io.out('Installed Packages\nbash.x86_64                     5.2.26-6.el10                @anaconda\ncoreutils.x86_64                9.5-6.el10                   @anaconda\nvim-enhanced.x86_64             2:9.1.083-5.el10             @appstream\n' + (LAB._S().installed.tree ? 'tree.x86_64                     2.1.0-8.el10                 @baseos\n' : '')); return 0; }
+    io.err(`No such command: ${sub}. Please use /usr/bin/${name} --help\n`); return 1;
+  }
+  cmd('dnf', dnfCmd, { help: '패키지 설치 (sudo dnf install tree) — CentOS·RHEL 계열' });
+  cmd('yum', dnfCmd, { help: 'dnf와 같음 (예전 이름)' });
 
   cmd('tree', async (argv, io) => {
-    if (!LAB._S().installed.tree) { io.err("Command 'tree' not found, but can be installed with:\nsudo apt install tree\n"); return 127; }
+    if (!LAB._S().installed.tree) { io.err('bash: tree: command not found...\n'); return 127; }
     const { o, a } = getopt(argv, 'L');
     const start = a[0] || '.'; const r = FS.resolve(start, {}, io.sh);
     if (!r.node) { io.out(`${start}  [error opening dir]\n\n0 directories, 0 files\n`); return 2; }
@@ -1230,7 +1251,7 @@
     walk(r.node, '', 1);
     io.out(`\n${nd} director${nd === 1 ? 'y' : 'ies'}, ${nf} file${nf === 1 ? '' : 's'}\n`);
     return 0;
-  }, { help: '디렉토리 구조를 나무 모양으로 (먼저 sudo apt install tree)' });
+  }, { help: '디렉토리 구조를 나무 모양으로 (먼저 sudo dnf install tree)' });
 
   /* ======================= help / man ======================= */
   const GROUPS = [
@@ -1239,11 +1260,11 @@
     ['파일', ['touch', 'cat', 'head', 'tail', 'more', 'less', 'wc', 'grep', 'seq', 'echo', 'cp', 'mv', 'rm', 'ln', 'mkfifo', 'stat', 'file']],
     ['권한·사용자', ['chmod', 'chown', 'sudo', 'su', 'useradd', 'adduser', 'userdel', 'passwd']],
     ['프로세스·셸', ['ps', 'pstree', 'kill', 'exit', 'logout', 'history', 'type', 'which', 'clear', 'sleep', 'jobs', 'fg']],
-    ['편집기·기타', ['vim', 'vi', 'man', 'ping', 'apt', 'reboot']],
+    ['편집기·기타', ['vim', 'vi', 'man', 'ping', 'dnf', 'reboot']],
   ];
   cmd('help', async (argv, io) => {
     if (argv[1]) return LAB.exec(['man', argv[1]], io);
-    io.out('GNU bash, version 5.2.21(1)-release (x86_64-pc-linux-gnu) — 실습 터미널에서 쓸 수 있는 명령\n\n');
+    io.out('GNU bash, version 5.2.26(1)-release (x86_64-redhat-linux-gnu) — 실습 터미널에서 쓸 수 있는 명령\n\n');
     for (const [g, list] of GROUPS) {
       io.outHTML(`<span class="c-head">[${esc(g)}]</span>\n`, `[${g}]\n`);
       list.forEach(c => { const m = LAB.meta[c] || {}; io.outHTML(`  <span class="c-exe">${esc(c.padEnd(12))}</span>${esc(m.help || '')}\n`, `  ${c.padEnd(12)}${m.help || ''}\n`); });

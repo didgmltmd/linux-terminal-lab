@@ -7,11 +7,16 @@
 
 <header class="top">
   <div class="brand">
-    <span class="logo" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="logo" aria-hidden="true"><svg viewBox="0 0 32 32" width="22" height="22"><path d="M6 9l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 24h10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></span>
     <div>
       <h1>리눅스 터미널 실습실</h1>
-      <p>Ubuntu 24.04 가상 터미널 · 리눅스 3장 기본 명령어 실습</p>
+      <p>CentOS Stream 10 가상 터미널 · 리눅스 3장 기본 명령어 실습</p>
     </div>
+  </div>
+  <div class="lang" role="group" aria-label="메시지 언어">
+    <span class="lang-l">메시지</span>
+    <button type="button" data-lang="ko" id="lang-ko">한국어</button>
+    <button type="button" data-lang="en" id="lang-en">English</button>
   </div>
   <ul class="keys" aria-label="키보드 도움말">
     <li><kbd>Tab</kbd> 자동 완성</li>
@@ -23,14 +28,14 @@
 </header>
 
 <main class="lab">
-  <section class="termwin" id="termwin" aria-label="Ubuntu 터미널">
+  <section class="termwin" id="termwin" aria-label="CentOS 터미널">
     <div class="tw-head">
       <div class="tw-left">
         <button id="btn-newtab" class="tw-icon" type="button" title="새 탭 (Ctrl+Shift+T)" aria-label="새 탭">
           <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M7 2h2v5h5v2H9v5H7V9H2V7h5z" fill="currentColor"/></svg>
         </button>
       </div>
-      <div class="tw-title" id="term-title">user1@ubuntu: ~</div>
+      <div class="tw-title" id="term-title">user1@localhost:~</div>
       <div class="tw-right">
         <button id="btn-clear" class="tw-text" type="button" title="화면 지우기 (Ctrl+L)">지우기</button>
         <span class="tw-dot" aria-hidden="true"><svg viewBox="0 0 16 16" width="12" height="12"><path d="M3 8h10" stroke="currentColor" stroke-width="1.6"/></svg></span>
@@ -60,7 +65,7 @@
 </main>
 
 <footer class="foot">
-  <p>실습용 가상 환경이에요. 실제 컴퓨터에는 아무 영향이 없고, 만든 파일과 진행 상황은 이 브라우저에만 저장돼요. 새로 고침은 <b>재부팅</b>과 같아서 일시적으로 바꾼 hostname은 원래대로 돌아가요.</p>
+  <p>수업 VM(CentOS Stream 10)과 같은 화면을 흉내 낸 실습용 가상 환경이에요. 과제를 고르면 파일·계정이 처음 상태인 새 터미널이 열려요. 실제 컴퓨터에는 아무 영향이 없고, 진행 상황은 이 브라우저에만 저장돼요. 새로 고침은 <b>재부팅</b>과 같아서 일시적으로 바꾼 hostname은 원래대로 돌아가요.</p>
 </footer>
 
 <script>/*SCRIPTS*/</script>
