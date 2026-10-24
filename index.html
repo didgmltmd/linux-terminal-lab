@@ -3518,7 +3518,7 @@ window.LAB_MAN = (function () {
         { t: 'IP ↔ 이름 변환표를 보세요.', hint: 'cat /etc/hosts', chk: function (e) { return is(e, 'cat') && args(e).indexOf('/etc/hosts') >= 0 && /127\.0\.0\.1/.test(out(e)); },
           ex: '/etc/hosts 는 DNS보다 먼저 참조하는 로컬 이름표예요. "127.0.0.1 localhost" = 자기 자신.' },
         { t: '자기 자신에게 ping 을 보내고, Ctrl+C 로 멈추세요.', hint: 'ping localhost', chk: function (e) { return is(e, 'ping') && args(e).some(function (a) { return a === 'localhost' || a === '127.0.0.1'; }); },
-          ex: '127.0.0.1 = 루프백 주소. 랜카드·케이블 없이도 항상 자기 자신이라 테스트용으로 써요.' }
+          ex: 'localhost = 루프백(자기 자신) 주소. IPv4 는 127.0.0.1, IPv6 는 ::1 — CentOS 는 ::1 로 응답해요. 랜카드·케이블 없이도 항상 자기 자신이라 테스트용으로 써요.' }
       ]
     },
     {
@@ -3799,10 +3799,10 @@ window.LAB_MAN = (function () {
       '#missions .pwbox{flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;padding:6px 10px;border-radius:8px;background:#ffffff0a;border:1px solid var(--m-line)}',
       '#missions .pwbox code{font-family:var(--lab-mono,ui-monospace,monospace);font-size:14px;font-weight:700;color:#fce94f;background:#0000004d;padding:0 7px;border-radius:5px}',
       '#missions .pwbox span{color:var(--m-mut);font-size:12px}',
-      '#missions .intro{margin:-4px 0 0;color:var(--m-mut);font-size:12.5px;flex:none}',
+      '#missions .intro{margin:0;color:var(--m-mut);font-size:12.5px;line-height:1.5}',
       '#missions .tag{display:inline-block;font-size:11px;font-weight:700;padding:0 7px;border-radius:999px;border:1px solid var(--m-acc);color:var(--m-acc);margin-right:6px;vertical-align:1px}',
       /* 방금 완료 */
-      '#missions .got{flex:none;display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border-radius:9px;background:color-mix(in srgb,var(--m-ok) 13%,transparent);border:1px solid color-mix(in srgb,var(--m-ok) 45%,transparent);font-size:13px}',
+      '#missions .got{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.5;color:var(--m-mut);padding-bottom:10px;border-bottom:1px solid var(--m-line)}',
       '#missions .got b{color:var(--m-ok);white-space:nowrap}',
       '#missions .got.pop{animation:mgot .5s ease-out}',
       '@keyframes mgot{0%{transform:translateY(-4px);opacity:0}100%{transform:none;opacity:1}}',
@@ -3810,7 +3810,7 @@ window.LAB_MAN = (function () {
       '#missions .now{flex:none;border:1.5px solid var(--m-acc);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px;background:color-mix(in srgb,var(--m-acc) 8%,var(--m-bg))}',
       '#missions .now.pop{animation:mnow .45s ease-out}',
       '@keyframes mnow{0%{transform:scale(.97);opacity:.4}100%{transform:none;opacity:1}}',
-      '#missions .now-h{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--m-mut)}',
+      '#missions .now-h{font-size:12px;color:var(--m-mut);margin-bottom:-6px}',
       '#missions .now-h b{color:var(--m-acc);font-size:12.5px}',
       '#missions .now-t{font-size:17px;font-weight:700;line-height:1.45;text-wrap:pretty}',
       '#missions .cmd{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}',
@@ -3844,6 +3844,8 @@ window.LAB_MAN = (function () {
       '#missions li .opt{font-size:10.5px;margin-left:4px;opacity:.8}',
       '#missions li .ex{grid-column:2;white-space:normal;font-size:12.5px;color:var(--m-fg);opacity:.85;border-left:2px solid var(--m-ok);padding-left:8px;margin-top:3px}',
       /* 아래 */
+      '#missions .mfoot .pw code{font-family:var(--lab-mono,ui-monospace,monospace);font-size:13.5px;font-weight:700;color:#fce94f;margin-left:2px}',
+      '#missions .mfoot .fr{display:flex;align-items:center;gap:12px}',
       '#missions .mfoot{flex:none;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--m-line);padding-top:9px;font-size:12px;color:var(--m-mut)}',
       '#missions .mfoot label{display:flex;gap:6px;align-items:center;cursor:pointer}',
       '#missions .mfoot input{accent-color:var(--m-acc)}',
@@ -3852,7 +3854,7 @@ window.LAB_MAN = (function () {
       '#missions .btn{border:1px solid var(--m-line);background:transparent;border-radius:7px;padding:5px 12px;font-size:12.5px}',
       '#missions .btn.pri{background:var(--m-acc);border-color:var(--m-acc);color:#fff}',
       /* 과제 목록 펼침 */
-      '#missions .menu{position:absolute;left:12px;right:12px;top:80px;bottom:12px;z-index:5;background:var(--m-bg);border:1px solid var(--m-line);border-radius:12px;box-shadow:0 18px 40px #0009;display:flex;flex-direction:column;overflow:hidden;animation:mgot .18s ease-out}',
+      '#missions .menu{position:absolute;left:12px;right:12px;top:76px;bottom:12px;z-index:5;background:var(--m-bg);border:1px solid var(--m-line);border-radius:12px;box-shadow:0 18px 40px #0009;display:flex;flex-direction:column;overflow:hidden;animation:mgot .18s ease-out}',
       '#missions .menu-h{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--m-line);font-size:12.5px;color:var(--m-mut)}',
       '#missions .menu-b{overflow:auto;padding:6px;display:flex;flex-direction:column;gap:2px}',
       '#missions .mi{border:0;background:transparent;border-radius:8px;padding:8px 10px;display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;font-size:14px}',
@@ -3885,7 +3887,7 @@ window.LAB_MAN = (function () {
 
     h.push('<div class="mtop">');
     h.push('<button class="nb" data-a="prev" aria-label="이전 과제"' + (idx === 0 ? ' disabled' : '') + '>‹</button>');
-    h.push('<button class="pick" data-a="list" aria-haspopup="true" aria-expanded="' + listOpen + '"><span class="pk"><span class="pk-n">과제 ' + (idx + 1) + ' / ' + M.length + ' · ' + m.ch + ' · 완료 ' + rd + '/' + req + '</span>' +
+    h.push('<button class="pick" data-a="list" aria-haspopup="true" aria-expanded="' + listOpen + '"><span class="pk"><span class="pk-n">과제 ' + (idx + 1) + ' / ' + M.length + '</span>' +
       '<span class="pk-t">' + (m.star ? '⭐ ' : '') + esc(m.title) + '</span></span><span class="car">▼</span></button>');
     h.push('<button class="nb" data-a="next" aria-label="다음 과제"' + (idx === M.length - 1 ? ' disabled' : '') + '>›</button>');
     h.push('</div>');
@@ -3893,12 +3895,9 @@ window.LAB_MAN = (function () {
     h.push('<div class="dots" aria-hidden="true">');
     m.steps.forEach(function (s, i) { h.push('<i class="' + (isDone(m, i) ? 'ok' : (i === cur ? 'cur' : '')) + (s.opt ? ' opt' : '') + '"></i>'); });
     h.push('</div>');
-    h.push('<div class="pwbox">🔑 비밀번호 <code>1234</code><span>user1 · root 같음 · 칠 때 화면에 안 보여요(정상)</span></div>');
-    h.push('<p class="intro">' + (m.star ? '<span class="tag">⭐ 시험</span>' : '') + esc(m.intro) + '</p>');
-
-    // 방금 완료한 단계 해설
+    var gotHTML = '';
     if (recent && recent.m === m.id && m.steps[recent.i]) {
-      h.push('<div class="got' + (recent.fresh ? ' pop' : '') + '" role="status"><b>✓ ' + (recent.i + 1) + '단계</b><span>' + esc(m.steps[recent.i].ex) + '</span></div>');
+      gotHTML = '<div class="got' + (recent.fresh ? ' pop' : '') + '" role="status"><b>✓</b><span>' + esc(m.steps[recent.i].ex) + '</span></div>';
       recent.fresh = false;
     }
 
@@ -3906,30 +3905,31 @@ window.LAB_MAN = (function () {
     if (cur >= 0 && !(complete(m) && m.steps[cur].opt && P.skipOpt)) {
       var s = m.steps[cur], hint = hintText(s), shown = P.showAll || openHints[key];
       h.push('<section class="now' + (key !== lastKey ? ' pop' : '') + '" aria-live="polite">');
-      h.push('<div class="now-h"><span><b>지금 할 일</b> · ' + (cur + 1) + '단계' + (s.opt ? ' (선택)' : '') + '</span>' + (s.on === 'vim' ? '<span>vim 안에서</span>' : '') + '</div>');
+      h.push(gotHTML || (cur === 0 ? '<p class="intro">' + esc(m.intro) + '</p>' : ''));
+      h.push('<div class="now-h"><b>' + (cur + 1) + '단계</b>' + (s.opt ? ' · 선택' : '') + (s.on === 'vim' ? ' · vim 안에서' : '') + '</div>');
       h.push('<div class="now-t">' + esc(s.t) + '</div>');
       h.push('<div class="cmd">');
       if (shown) {
         h.push('<code>' + esc(hint) + '</code>');
-        if (canInsert(s, hint)) h.push('<button class="ins" data-a="ins" data-h="' + esc(hint) + '">입력하기<kbd>Alt+H</kbd></button>');
+        if (canInsert(s, hint)) h.push('<button class="ins" data-a="ins" data-h="' + esc(hint) + '" title="단축키 Alt+H">입력하기</button>');
       } else {
-        h.push('<button class="reveal" data-a="hint" data-k="' + key + '">💡 명령어 보기<kbd>Alt+H</kbd></button>');
+        h.push('<button class="reveal" data-a="hint" data-k="' + key + '" title="단축키 Alt+H">명령어 보기</button>');
       }
       h.push('</div>');
-      h.push('<div class="sub"><span>터미널에 직접 쳐 보고 Enter ⏎ 하면 자동으로 다음 단계로 넘어가요.</span>' + (s.opt ? '<button class="lnk" data-a="skip" data-i="' + cur + '">건너뛰기</button>' : '') + '</div>');
+      if (s.opt) h.push('<div class="sub"><button class="lnk" data-a="skip" data-i="' + cur + '">건너뛰기</button></div>');
       h.push('</section>');
     }
     lastKey = key;
 
     if (complete(m)) {
       var nx = M[idx + 1];
-      h.push('<section class="fin" role="status"><h3>🎉 ' + (idx + 1) + '번 과제 완료!</h3>');
-      if (nx) h.push('<p>다음 과제를 누르면 깨끗한 새 터미널에서 시작해요.</p><button class="go" data-a="next"><span>다음: ' + (idx + 2) + '. ' + (nx.star ? '⭐ ' : '') + esc(nx.title) + '</span><span>→<kbd>Alt+N</kbd></span></button>');
+      h.push('<section class="fin" role="status">' + gotHTML + '<h3>🎉 과제 완료!</h3>');
+      if (nx) h.push('<button class="go" data-a="next" title="단축키 Alt+N"><span>다음: ' + esc(nx.title) + '</span><span>→</span></button>');
       else h.push('<p>모든 과제를 끝냈어요. 수고했어요!</p>');
       h.push('</section>');
     }
 
-    h.push('<div class="sl"><div class="sl-h"><span>전체 단계</span><span>완료한 단계를 누르면 해설이 보여요</span></div><ol>');
+    h.push('<div class="sl"><ol>');
     m.steps.forEach(function (s, i) {
       var ok_ = isDone(m, i), c = ok_ ? 'ok' : (i === cur ? 'cur' : 'pend');
       var open = ok_ && P.exOpen && P.exOpen[m.id + ':' + i];
@@ -3942,11 +3942,12 @@ window.LAB_MAN = (function () {
       h.push('<div class="cfm" role="alertdialog"><div>모든 과제의 진행 기록과 파일·계정이 처음 상태로 돌아가요. 초기화할까요?</div>' +
         '<div class="row"><button class="btn pri" data-a="resetyes">초기화</button><button class="btn" data-a="resetno">취소</button></div></div>');
     }
-    h.push('<div class="mfoot"><label><input type="checkbox" data-a="showall"' + (P.showAll ? ' checked' : '') + '> 명령어 항상 보이기</label>' +
-      '<span>완료 ' + T.fin + '/' + M.length + '과제 · <button class="lnk" data-a="redo">이 과제 처음부터</button> · <button class="lnk" data-a="reset">전체 초기화</button></span></div>');
+    h.push('<div class="mfoot"><span class="pw" title="user1 · root 같음. 칠 때 화면에 안 보여요(정상)">🔑 비밀번호 <code>1234</code></span>' +
+      '<span class="fr"><label title="힌트 없이 명령어를 바로 보여 줘요"><input type="checkbox" data-a="showall"' + (P.showAll ? ' checked' : '') + '> 명령어 표시</label>' +
+      '<button class="lnk" data-a="redo" title="이 과제를 새 터미널로 다시 시작">처음부터</button><button class="lnk" data-a="reset" title="모든 진행 기록 지우기">초기화</button></span></div>');
 
     if (listOpen) {
-      h.push('<div class="menu" role="dialog" aria-label="과제 목록"><div class="menu-h"><span>과제를 고르면 새 터미널로 시작해요 · ⭐ = 시험 관련</span><button class="lnk" data-a="list">닫기 (Esc)</button></div><div class="menu-b">');
+      h.push('<div class="menu" role="dialog" aria-label="과제 목록"><div class="menu-h"><span>완료 ' + T.fin + ' / ' + M.length + ' · ⭐ = 시험 관련</span><button class="lnk" data-a="list">닫기 (Esc)</button></div><div class="menu-b">');
       M.forEach(function (x, k) {
         var cls = 'mi' + (x.id === m.id ? ' on' : '') + (isFin(x) ? ' fin' : '');
         h.push('<button class="' + cls + '" data-a="go" data-id="' + x.id + '"><span class="n">' + (isFin(x) ? '✓' : (k + 1)) + '</span>' +
