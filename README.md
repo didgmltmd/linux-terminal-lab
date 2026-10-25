@@ -2,7 +2,7 @@
 
 CentOS Stream 10 터미널을 브라우저에서 흉내 낸 **리눅스 기본 명령어 실습 사이트**예요. 설치 없이 바로 명령을 쳐 볼 수 있어요.
 
-**바로 열기:** https://didgmltmd.github.io/linux-terminal-lab/
+**바로 열기:** https://learningmate-lab.github.io/linux-terminal-lab/
 
 ## 무엇을 할 수 있나
 - 실제 우분투와 같은 프롬프트·출력·에러 메시지 (ls, cd, mkdir, cat, head/tail, cp/mv/rm, chmod, stat, sudo, su, useradd/userdel, ps, pstree, kill, ping, vim, man …)
