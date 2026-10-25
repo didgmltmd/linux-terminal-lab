@@ -358,7 +358,7 @@
           recent = { m: m.id, i: i, fresh: true };
           save();
           render();
-          if (complete(m)) { P.fin = P.fin || {}; P.fin[m.id] = true; save(); }
+          if (complete(m)) { if (!(P.fin && P.fin[m.id])) { window.LMTrack && window.LMTrack.event('mission'); } P.fin = P.fin || {}; P.fin[m.id] = true; save(); }
         }
       }
     }

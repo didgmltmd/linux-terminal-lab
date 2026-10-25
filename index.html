@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<script src="https://learningmate-lab.github.io/track.js" data-site="linux-terminal-lab" defer></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>리눅스 터미널 실습실</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -3760,7 +3761,7 @@ window.LAB_MAN = (function () {
           recent = { m: m.id, i: i, fresh: true };
           save();
           render();
-          if (complete(m)) { P.fin = P.fin || {}; P.fin[m.id] = true; save(); }
+          if (complete(m)) { if (!(P.fin && P.fin[m.id])) { window.LMTrack && window.LMTrack.event('mission'); } P.fin = P.fin || {}; P.fin[m.id] = true; save(); }
         }
       }
     }
