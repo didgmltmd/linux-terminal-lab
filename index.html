@@ -3016,8 +3016,15 @@ window.LAB_MAN = (function () {
     if (V._finished) return false;
     if (V.handled.has(e)) return true;
     V.handled.add(e);
-    if (e.isComposing || e.keyCode === 229 || e.key === 'Process') return true; // IME 조합 중
     var k = e.key;
+    var ime = e.isComposing || e.keyCode === 229 || k === 'Process' || /^[ㄱ-ㅣ]$/.test(k || '');
+    if (ime) {
+      // 한글 입력 상태에서 명령 모드 키를 누르면 물리 키(KeyY → y)로 바꿔 처리
+      var mk = V.mode !== 'insert' && V.mode !== 'cmdline' && /^Key([A-Z])$/.exec(e.code || '');
+      if (!mk) return true; // 입력 모드의 한글 조합은 compositionend 에서 처리
+      k = e.shiftKey ? mk[1] : mk[1].toLowerCase();
+      if (!V._hangulTold) { V._hangulTold = true; V._hangulMsg = true; V._msgBefore = V.msg; }
+    }
     if (k === 'Shift' || k === 'Control' || k === 'Alt' || k === 'Meta' || k === 'CapsLock' || k === 'HangulMode' || k === 'Hangul') return true;
     if (e.ctrlKey && (k === '[' || k === 'c' || k === 'C') && V.mode !== 'normal') k = 'Escape';
     try { e.preventDefault(); } catch (x) { }
@@ -3040,6 +3047,7 @@ window.LAB_MAN = (function () {
         if (!V.op && !V.count && !V.pendReg) { var sq = V._seq; V._seq = ''; emit({ type: 'cmd', path: V.path, text: sq, normal: true }); }
       }
     }
+    if (V._hangulMsg) { V._hangulMsg = false; if (!V.msg || V.msg === V._msgBefore) V.info('한글 입력 상태예요 · 명령은 처리했지만 한/영 키로 영문으로 바꿔 두세요'); }
     if (V.mode !== prevMode) emit({ type: 'mode', path: V.path, mode: V.mode });
     V.clamp();
     V.draw();
