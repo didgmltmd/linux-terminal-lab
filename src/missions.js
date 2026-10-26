@@ -353,6 +353,10 @@
       if ((s.on || 'command') === kind) {
         var passed = false;
         try { passed = !!s.chk(e); } catch (x) { passed = false; }
+        // cd ~ ; rm -r tmp 처럼 한 줄에 여러 명령을 쓰면 첫 명령만 argv 에 들어오므로, 줄 안의 명령을 하나씩 따로 확인
+        if (!passed && kind === 'command' && e && e.cmds && e.cmds.length > 1) {
+          for (var k = 0; k < e.cmds.length && !passed; k++) { try { passed = !!s.chk(Object.assign({}, e, { argv: e.cmds[k] })); } catch (x) { } }
+        }
         if (passed) {
           doneSet(m).push(i);
           recent = { m: m.id, i: i, fresh: true };
