@@ -460,6 +460,7 @@
   window.addEventListener('resize', () => { cwCache = null; if (active && active.fs) active.fs.render(els.fsLayer); });
 
   function readLineOn(tab, o) {
+    if (tab.pendingEOF) { tab.pendingEOF = false; return Promise.resolve(''); }
     return new Promise(res => { tab.read = { prompt: LAB.tr(o.prompt || ''), hidden: !!o.hidden, res, buf: '' }; tab.buf = ''; if (tab === active) { els.kbd.value = ''; renderInput(); } });
   }
   function setFullscreen(tab, h) {
@@ -484,6 +485,7 @@
     const before = esc(shown.slice(0, reading && tab.read.hidden ? 0 : pos));
     const atRaw = reading && tab.read.hidden ? ' ' : (shown[pos] || ' ');
     const after = esc(reading && tab.read.hidden ? '' : shown.slice(pos + 1));
+    if (els.hint) els.hint.hidden = !(tab === active && reading && tab.read.prompt === '' && !tab.read.hidden && !tab.fs);
     els.inputLine.innerHTML = `${p}<span class="in">${before}<span class="cur${els.focused ? '' : ' blur'}">${esc(atRaw)}</span>${after}</span>`;
     if (tab === active) scrollBottom();
   }
@@ -494,18 +496,20 @@
   };
 
   /* ---------------- 입력 처리 ---------------- */
+  // Ctrl+글자 단축키: 한글 입력 상태면 e.key 가 'ㅇ' 처럼 오므로 키 위치(e.code)로도 확인
+  const ctl = (e, ch) => e.ctrlKey && ((e.key || '').toLowerCase() === ch || e.code === 'Key' + ch.toUpperCase());
   function onKeyDown(e) {
     const tab = active;
     if (tab.closed) return;
     // Ctrl+Shift+T: 새 탭
-    if (e.ctrlKey && e.shiftKey && (e.key === 'T' || e.key === 't')) { e.preventDefault(); openTab(); return; }
+    if (ctl(e, 't') && e.shiftKey) { e.preventDefault(); openTab(); return; }
     if (tab.fs) {
       if (e.isComposing || e.key === 'Process') return;
       const handled = tab.fs.key(e);
       if (handled !== false) e.preventDefault();
       return;
     }
-    if (e.ctrlKey && !e.altKey && (e.key === 'c' || e.key === 'C') && !e.shiftKey) {
+    if (ctl(e, 'c') && !e.altKey && !e.shiftKey) {
       const sel = window.getSelection && String(window.getSelection());
       if (sel && sel.length && !tab.busy) return; // 복사 허용
       e.preventDefault();
@@ -513,19 +517,24 @@
       if (tab.busy) { tab.abort = true; if (tab.onAbort) tab.onAbort(); return; }
       printTo(tab, promptHTML(tab) + esc(els.kbd.value) + '^C\n', 'html'); els.kbd.value = ''; tab.lastExit = 130; renderInput(); return;
     }
-    if (e.ctrlKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); if (!tab.busy) { LAB.term.clear(); renderInput(); } return; }
-    if (e.ctrlKey && (e.key === 'd' || e.key === 'D')) {
+    if (ctl(e, 'l')) { e.preventDefault(); if (!tab.busy) { LAB.term.clear(); renderInput(); } return; }
+    if (ctl(e, 'd')) {
       e.preventDefault();
-      if (tab.read) { if (els.kbd.value === '') { const r = tab.read; tab.read = null; r.res('\u0004'); renderInput(); } return; }
+      if (tab.read) {
+        const r = tab.read, v = els.kbd.value;
+        if (v === '') { tab.read = null; r.res('\u0004'); renderInput(); }
+        else if (r.prompt === '' && !r.hidden) { tab.read = null; els.kbd.value = ''; printTo(tab, v + '\n'); tab.pendingEOF = true; r.res(v); renderInput(); }
+        return;
+      }
       if (!tab.busy && els.kbd.value === '') { printTo(tab, promptHTML(tab) + '\n', 'html'); runLine(tab, 'exit', true); }
       return;
     }
-    if (e.ctrlKey && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); if (tab.read && tab.onStop) tab.onStop(); return; }
-    if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) { e.preventDefault(); const p = els.kbd.selectionStart; els.kbd.value = els.kbd.value.slice(p); els.kbd.setSelectionRange(0, 0); renderInput(); return; }
-    if (e.ctrlKey && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); els.kbd.value = els.kbd.value.slice(0, els.kbd.selectionStart); renderInput(); return; }
-    if (e.ctrlKey && (e.key === 'a' || e.key === 'A')) { e.preventDefault(); els.kbd.setSelectionRange(0, 0); renderInput(); return; }
-    if (e.ctrlKey && (e.key === 'e' || e.key === 'E')) { e.preventDefault(); const n = els.kbd.value.length; els.kbd.setSelectionRange(n, n); renderInput(); return; }
-    if (e.ctrlKey && (e.key === 'w' || e.key === 'W')) { e.preventDefault(); const p = els.kbd.selectionStart; const v = els.kbd.value; const m = v.slice(0, p).match(/\S+\s*$/); const s = m ? p - m[0].length : p; els.kbd.value = v.slice(0, s) + v.slice(p); els.kbd.setSelectionRange(s, s); renderInput(); return; }
+    if (ctl(e, 'z')) { e.preventDefault(); if (tab.read && tab.onStop) tab.onStop(); return; }
+    if (ctl(e, 'u')) { e.preventDefault(); const p = els.kbd.selectionStart; els.kbd.value = els.kbd.value.slice(p); els.kbd.setSelectionRange(0, 0); renderInput(); return; }
+    if (ctl(e, 'k')) { e.preventDefault(); els.kbd.value = els.kbd.value.slice(0, els.kbd.selectionStart); renderInput(); return; }
+    if (ctl(e, 'a')) { e.preventDefault(); els.kbd.setSelectionRange(0, 0); renderInput(); return; }
+    if (ctl(e, 'e')) { e.preventDefault(); const n = els.kbd.value.length; els.kbd.setSelectionRange(n, n); renderInput(); return; }
+    if (ctl(e, 'w')) { e.preventDefault(); const p = els.kbd.selectionStart; const v = els.kbd.value; const m = v.slice(0, p).match(/\S+\s*$/); const s = m ? p - m[0].length : p; els.kbd.value = v.slice(0, s) + v.slice(p); els.kbd.setSelectionRange(s, s); renderInput(); return; }
     if (e.key === 'Enter') {
       e.preventDefault(); if (e.isComposing) return;
       const v = els.kbd.value; els.kbd.value = '';
@@ -1020,7 +1029,7 @@
   LAB.boot = function () {
     els = {
       win: $('#termwin'), body: $('#term-body'), screen: $('#term-screen'), inputLine: $('#term-input'), kbd: $('#term-kbd'), title: $('#term-title'),
-      tabs: $('#term-tabs'), fsLayer: $('#term-fs'), closed: $('#term-closed'), boot: $('#term-boot'), toast: $('#term-toast'), focused: false,
+      tabs: $('#term-tabs'), fsLayer: $('#term-fs'), closed: $('#term-closed'), boot: $('#term-boot'), toast: $('#term-toast'), hint: $('#term-hint'), focused: false,
     };
     if (!load()) { freshState(); save(); }
     const t = makeTab(); switchTab(t); banner(t);
