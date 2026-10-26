@@ -3555,11 +3555,11 @@ window.LAB_MAN = (function () {
         { t: '① 상대경로로 한 번에 temp 로 이동하세요.', hint: 'cd ../temp', chk: function (e) {
             var a = args(e)[0] || ''; return is(e, 'cd') && cwdIs(home() + '/choi/temp') && endsWithPath(prevCwd || '', 'choi/temp2') && a.charAt(0) !== '/' && a.charAt(0) !== '~'; },
           ex: '.. = 상위(choi). 현재 위치를 기준으로 가니까 상대경로예요.' },
-        { t: '② cd ../temp2 로 돌아간 뒤, 절대경로로 한 번에 temp 로 이동하세요.', hint: 'cd /home/user1/choi/temp', chk: function (e) {
-            var a = args(e)[0] || ''; return is(e, 'cd') && cwdIs(home() + '/choi/temp') && endsWithPath(prevCwd || '', 'choi/temp2') && a.charAt(0) === '/' && line(e).indexOf('~') < 0; },
+        { t: '② cd ../temp2 로 돌아간 뒤, 절대경로로 한 번에 temp 로 이동하세요.', hint: 'cd ../temp2 ; cd /home/user1/choi/temp', chk: function (e) {
+            var a = args(e)[0] || ''; return is(e, 'cd') && cwdIs(home() + '/choi/temp') && (endsWithPath(prevCwd || '', 'choi/temp2') || /cd\s+\S*temp2\s*;/.test(line(e))) && a.charAt(0) === '/' && line(e).indexOf('~') < 0; },
           ex: '/ 부터 모든 디렉토리 이름을 적어서 어디서 쳐도 같은 곳으로 가요.' },
-        { t: '③ 다시 temp2 로 돌아간 뒤, ~ 를 써서 한 번에 이동하세요.', hint: 'cd ~/choi/temp', chk: function (e) {
-            return is(e, 'cd') && cwdIs(home() + '/choi/temp') && endsWithPath(prevCwd || '', 'choi/temp2') && /(^|\s|;)cd\s+~/.test(line(e)); },
+        { t: '③ 다시 temp2 로 돌아간 뒤, ~ 를 써서 한 번에 이동하세요.', hint: 'cd ../temp2 ; cd ~/choi/temp', chk: function (e) {
+            return is(e, 'cd') && cwdIs(home() + '/choi/temp') && (endsWithPath(prevCwd || '', 'choi/temp2') || /cd\s+\S*temp2\s*;/.test(line(e))) && /(^|\s|;)cd\s+~/.test(line(e)); },
           ex: '~ = 홈. ~/choi/temp = /home/user1/choi/temp. 시험에선 절대경로·상대경로 두 가지 이상을 쓰면 돼요.' }
       ]
     },
@@ -3641,11 +3641,11 @@ window.LAB_MAN = (function () {
           ex: 'touch = 없으면 빈 파일 생성, 있으면 시간만 갱신.' },
         { t: 'memo.txt 의 상세 정보를 보세요.', hint: 'stat memo.txt', chk: function (e) { return is(e, 'stat') && /Birth|생성/.test(out(e)); },
           ex: 'Access 마지막으로 읽은 시간 · Modify 내용 수정 · Change 정보(권한·소유자 등) 변경 · Birth 생성 시간.' },
-        { t: '파일을 읽은 뒤(cat) 다시 stat 하세요. Access 를 보세요.', hint: 'cat memo.txt', chk: function (e) { return is(e, 'stat') && /memo\.txt/.test(line(e)) && (P.data.m8cat === true); },
+        { t: '파일을 읽은 뒤(cat) 다시 stat 하세요. Access 를 보세요.', hint: 'cat memo.txt ; stat memo.txt', chk: function (e) { return is(e, 'stat') && /memo\.txt/.test(line(e)) && (P.data.m8cat === true); },
           ex: '읽기만 하면 Access 만 바뀌어요.', pre: function (e) { if (is(e, 'cat') && /memo\.txt/.test(line(e)) && line(e).indexOf('>') < 0) P.data.m8cat = true; } },
-        { t: '내용을 덧붙인 뒤 다시 stat 하세요.', hint: 'echo hi >> memo.txt', chk: function (e) { return is(e, 'stat') && /memo\.txt/.test(line(e)) && /hi/.test(content(home() + '/memo.txt')); },
+        { t: '내용을 덧붙인 뒤 다시 stat 하세요.', hint: 'echo hi >> memo.txt ; stat memo.txt', chk: function (e) { return is(e, 'stat') && /memo\.txt/.test(line(e)) && /hi/.test(content(home() + '/memo.txt')); },
           ex: '내용이 바뀌면 Modify 와 Change 가 함께 바뀌어요 (크기 같은 정보도 바뀌니까).' },
-        { t: '권한을 600 으로 바꾼 뒤 다시 stat 하세요.', hint: 'chmod 600 memo.txt', chk: function (e) { var n = node(home() + '/memo.txt'); return is(e, 'stat') && n && (n.mode & 511) === 384; },
+        { t: '권한을 600 으로 바꾼 뒤 다시 stat 하세요.', hint: 'chmod 600 memo.txt ; stat memo.txt', chk: function (e) { var n = node(home() + '/memo.txt'); return is(e, 'stat') && n && (n.mode & 511) === 384; },
           ex: '권한만 바꾸면 Change 만 바뀌어요. Birth 는 처음 만든 시각 그대로예요.' }
       ]
     },
