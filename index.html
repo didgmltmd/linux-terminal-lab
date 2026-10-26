@@ -3827,6 +3827,12 @@ window.LAB_MAN = (function () {
       '@keyframes mgot{0%{transform:translateY(-4px);opacity:0}100%{transform:none;opacity:1}}',
       /* 지금 할 일 */
       '#missions .now{flex:none;border:1.5px solid var(--m-acc);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px;background:color-mix(in srgb,var(--m-acc) 8%,var(--m-bg))}',
+      '#missions .seq{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}',
+      '#missions .seq .sq{display:flex;align-items:center;gap:8px;min-width:0}',
+      '#missions .seq .sq i{font-style:normal;flex:none;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;background:var(--m-acc);color:#fff}',
+      '#missions .seq .sq em{font-style:normal;flex:none;font-size:11.5px;color:var(--m-mut)}',
+      '#missions .now.extra{border-style:dashed;border-width:1px;background:transparent;padding:12px 14px;gap:8px}',
+      '#missions .now.extra .now-t{font-size:14px}',
       '#missions .now.pop{animation:mnow .45s ease-out}',
       '@keyframes mnow{0%{transform:scale(.97);opacity:.4}100%{transform:none;opacity:1}}',
       '#missions .now-h{font-size:12px;color:var(--m-mut);margin-bottom:-6px}',
@@ -3895,7 +3901,23 @@ window.LAB_MAN = (function () {
     return { all: all, d: d, fin: fin };
   }
   function isFin(m) { return complete(m) || !!(P.fin && P.fin[m.id]); }
-  function canInsert(s, hint) { return (s.on || 'command') === 'command' && hint && !/→/.test(hint) && !/처음PID/.test(hint); }
+  // 입력하기로 터미널에 넣을 명령. vim 단계라도 'vim 파일' 처럼 터미널에서 치는 첫 부분은 넣어 줌
+  function insText(s, hint) {
+    if (!hint || /처음PID/.test(hint)) return '';
+    if ((s.on || 'command') === 'command' && !/→/.test(hint)) return hint;
+    var first = hint.split('→')[0].trim();
+    return /^(vim|vi)\s/.test(first) ? first : '';
+  }
+  function canInsert(s, hint) { return !!insText(s, hint); }
+  // 'vim memo.txt → yy' 같은 순서 안내는 단계별 칩으로 (→ 는 치는 글자가 아님)
+  function hintHTML(s, hint) {
+    if (!/→/.test(hint)) return '<code>' + esc(hint) + '</code>';
+    var parts = hint.split('→').map(function (x) { return x.trim(); });
+    return '<span class="seq">' + parts.map(function (x, k) {
+      var where = /^(vim|vi)\s/.test(x) ? '터미널' : (s.on === 'vim' ? 'vim 안' : '');
+      return '<span class="sq"><i>' + (k + 1) + '</i>' + (where ? '<em>' + where + '</em>' : '') + '<code>' + esc(x) + '</code></span>';
+    }).join('') + '</span>';
+  }
   var lastKey = '';
 
   function render() {
@@ -3921,32 +3943,40 @@ window.LAB_MAN = (function () {
     }
 
     var key = m.id + ':' + cur;
-    if (cur >= 0 && !(complete(m) && m.steps[cur].opt && P.skipOpt)) {
+    var done = complete(m);
+    // 필수 단계를 다 끝냈는데 선택 단계가 남은 경우: 완료 카드를 위에, 선택 단계는 그 아래 작은 '추가 연습' 카드로 (메시지 중복 없이)
+    var extra = done && cur >= 0 && m.steps[cur].opt;
+    var nowHTML = '';
+    if (cur >= 0) {
       var s = m.steps[cur], hint = hintText(s), shown = P.showAll || openHints[key];
-      h.push('<section class="now' + (key !== lastKey ? ' pop' : '') + '" aria-live="polite">');
-      h.push(gotHTML || (cur === 0 ? '<p class="intro">' + esc(m.intro) + '</p>' : ''));
-      h.push('<div class="now-h"><b>' + (cur + 1) + '단계</b>' + (s.opt ? ' · 선택' : '') + (s.on === 'vim' ? ' · vim 안에서' : '') + '</div>');
-      h.push('<div class="now-t">' + esc(s.t) + '</div>');
-      h.push('<div class="cmd">');
+      var q = [];
+      q.push('<section class="now' + (extra ? ' extra' : '') + (key !== lastKey ? ' pop' : '') + '" aria-live="polite">');
+      if (!extra) q.push(gotHTML || (cur === 0 ? '<p class="intro">' + esc(m.intro) + '</p>' : ''));
+      q.push('<div class="now-h">' + (extra ? '<b>추가 연습</b> · 선택 · ' + (cur + 1) + '단계' : '<b>' + (cur + 1) + '단계</b>' + (s.opt ? ' · 선택' : '')) + (s.on === 'vim' ? ' · vim 안에서' : '') + '</div>');
+      q.push('<div class="now-t">' + esc(extra ? s.t.replace(/^\(선택\)\s*/, '') : s.t) + '</div>');
+      q.push('<div class="cmd">');
       if (shown) {
-        h.push('<code>' + esc(hint) + '</code>');
-        if (canInsert(s, hint)) h.push('<button class="ins" data-a="ins" data-h="' + esc(hint) + '" title="단축키 Alt+H">입력하기</button>');
+        q.push(hintHTML(s, hint));
+        if (canInsert(s, hint)) q.push('<button class="ins" data-a="ins" data-h="' + esc(insText(s, hint)) + '" title="단축키 Alt+H">입력하기</button>');
       } else {
-        h.push('<button class="reveal" data-a="hint" data-k="' + key + '" title="단축키 Alt+H">명령어 보기</button>');
+        q.push('<button class="reveal" data-a="hint" data-k="' + key + '" title="단축키 Alt+H">명령어 보기</button>');
       }
-      h.push('</div>');
-      if (s.opt) h.push('<div class="sub"><button class="lnk" data-a="skip" data-i="' + cur + '">건너뛰기</button></div>');
-      h.push('</section>');
+      q.push('</div>');
+      if (s.opt) q.push('<div class="sub"><button class="lnk" data-a="skip" data-i="' + cur + '"' + (extra ? ' data-all="1"' : '') + '>' + (extra ? '남은 선택 단계 모두 건너뛰기' : '건너뛰기') + '</button></div>');
+      q.push('</section>');
+      nowHTML = q.join('');
     }
     lastKey = key;
 
-    if (complete(m)) {
+    if (!extra) h.push(nowHTML);
+    if (done) {
       var nx = M[idx + 1];
       h.push('<section class="fin" role="status">' + gotHTML + '<h3>🎉 과제 완료!</h3>');
       if (nx) h.push('<button class="go" data-a="next" title="단축키 Alt+N"><span>다음: ' + esc(nx.title) + '</span><span>→</span></button>');
       else h.push('<p>모든 과제를 끝냈어요. 수고했어요!</p>');
       h.push('</section>');
     }
+    if (extra) h.push(nowHTML);
 
     h.push('<div class="sl"><ol>');
     m.steps.forEach(function (s, i) {
@@ -3983,7 +4013,7 @@ window.LAB_MAN = (function () {
     var m = byId(P.active), cur = curIndex(m); if (cur < 0) return;
     var s = m.steps[cur], key = m.id + ':' + cur, hint = hintText(s);
     if (!(P.showAll || openHints[key])) { openHints[key] = true; render(); return; }
-    if (canInsert(s, hint)) { try { LAB.insert(hint); } catch (x) { } }
+    if (canInsert(s, hint)) { try { LAB.insert(insText(s, hint)); } catch (x) { } }
   }
   function goNext() { var m = byId(P.active), idx = M.indexOf(m); if (idx < M.length - 1) { P.active = M[idx + 1].id; openMission(M[idx + 1]); } }
 
@@ -3995,7 +4025,7 @@ window.LAB_MAN = (function () {
     else if (a === 'list') { listOpen = !listOpen; render(); if (!listOpen) focusTerm(); }
     else if (a === 'hint') { openHints[b.getAttribute('data-k')] = true; render(); focusTerm(); }
     else if (a === 'ins') { try { LAB.insert(b.getAttribute('data-h')); } catch (x) { } focusTerm(); }
-    else if (a === 'skip') { skip(m, +b.getAttribute('data-i')); focusTerm(); }
+    else if (a === 'skip') { if (b.getAttribute('data-all')) { m.steps.forEach(function (x, k) { if (x.opt && !isDone(m, k)) doneSet(m).push(k); }); save(); render(); } else skip(m, +b.getAttribute('data-i')); focusTerm(); }
     else if (a === 'row') { var i = +b.getAttribute('data-i'); if (isDone(m, i)) { P.exOpen = P.exOpen || {}; var k = m.id + ':' + i; P.exOpen[k] = !P.exOpen[k]; save(); render(); } }
     else if (a === 'showall') { P.showAll = b.checked; save(); render(); focusTerm(); }
     else if (a === 'prev' && idx > 0) { P.active = M[idx - 1].id; openMission(M[idx - 1]); }
