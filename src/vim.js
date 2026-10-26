@@ -444,6 +444,14 @@
     else if (V.mode === 'cmdline') V.keyCmd(k, e);
     else V.keyNormal(k, e);
     if (V._finished) return true;
+    // 명령 모드 키 묶음(yy, p, dd, n, "1yy …)이 끝나면 미션 쪽에 알림
+    if (prevMode === 'normal') {
+      if (k === 'Escape' || V.mode !== 'normal') V._seq = '';
+      else {
+        V._seq = ((V._seq || '') + (k.length === 1 ? k : '<' + k + '>')).slice(-12);
+        if (!V.op && !V.count && !V.pendReg) { var sq = V._seq; V._seq = ''; emit({ type: 'cmd', path: V.path, text: sq, normal: true }); }
+      }
+    }
     if (V.mode !== prevMode) emit({ type: 'mode', path: V.path, mode: V.mode });
     V.clamp();
     V.draw();

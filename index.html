@@ -3032,6 +3032,14 @@ window.LAB_MAN = (function () {
     else if (V.mode === 'cmdline') V.keyCmd(k, e);
     else V.keyNormal(k, e);
     if (V._finished) return true;
+    // 명령 모드 키 묶음(yy, p, dd, n, "1yy …)이 끝나면 미션 쪽에 알림
+    if (prevMode === 'normal') {
+      if (k === 'Escape' || V.mode !== 'normal') V._seq = '';
+      else {
+        V._seq = ((V._seq || '') + (k.length === 1 ? k : '<' + k + '>')).slice(-12);
+        if (!V.op && !V.count && !V.pendReg) { var sq = V._seq; V._seq = ''; emit({ type: 'cmd', path: V.path, text: sq, normal: true }); }
+      }
+    }
     if (V.mode !== prevMode) emit({ type: 'mode', path: V.path, mode: V.mode });
     V.clamp();
     V.draw();
@@ -3734,8 +3742,8 @@ window.LAB_MAN = (function () {
           ex: 'w = 디스크에 저장, q = 종료. 저장 명령을 줘야 파일에 기록돼요.' },
         { t: '저장됐는지 확인하세요.', hint: 'cat memo.txt', chk: function (e) { return is(e, 'cat') && /memo\.txt/.test(line(e)) && ok(e); },
           ex: '방금 쓴 내용이 보이면 성공.' },
-        { on: 'vim', t: '다시 열어서 첫 줄에서 yy(한 줄 복사)를 누르세요.', hint: 'vim memo.txt → yy', chk: function (v) { return v.type === 'cmd' && /^\d*yy$/.test(v.text || ''); },
-          ex: '복사한 내용은 버퍼(클립보드 같은 임시 공간)에 들어가요.' },
+        { on: 'vim', t: '다시 열어서 첫 줄에서 yy(한 줄 복사)를 누르세요. 화면엔 변화가 없어도 복사된 거예요.', hint: 'vim memo.txt → yy', chk: function (v) { return v.type === 'cmd' && /^\d*yy$/.test(v.text || ''); },
+          ex: '복사한 내용은 버퍼(클립보드 같은 임시 공간)에 들어가요. 한두 줄 복사는 화면에 아무 표시가 없는 게 정상이에요(3줄 이상일 때만 "3 lines yanked" 표시).' },
         { on: 'vim', t: 'p 로 붙여 넣으세요.', hint: 'p', chk: function (v) { return v.type === 'cmd' && /^p$/i.test(v.text || ''); },
           ex: 'p = 커서 아래에, P = 위에 붙이기.' },
         { on: 'vim', t: 'dd 로 한 줄을 지우세요.', hint: 'dd', chk: function (v) { return v.type === 'cmd' && /^\d*dd$/.test(v.text || ''); },
